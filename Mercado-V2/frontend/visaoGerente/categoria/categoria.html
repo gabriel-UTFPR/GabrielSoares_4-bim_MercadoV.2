@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Categorias</title>
+    <link rel="stylesheet" href="categoria.css">
+</head>
+
+<body onload="listar()">
+    <header>
+        <img src="http://localhost:3001/imagens/carrinho.png" alt="Carrinho de compras">
+        <h1>Cadastro de categorias de produtos</h1>
+        <p>Gerencie as categorias de produtos do sistema.</p>
+    </header>
+
+    <main class="container-master">
+        <div class="conteudo-principal">
+            <section class="form-esquerda">
+                <h2>Dados da Categoria</h2>
+                
+                <label for="inputId_categoria">ID</label>
+                <div class="linha-id">
+                    <input type="number" name="inputId_categoria" id="inputId_categoria"  placeholder="Ex: 1">
+                    <input type="button" value="Procure" id="btProcure" onclick="procure()">
+                    <input type="button" value="Inserir" id="btInserir" onclick="inserir()" style="display:none;">
+                    <input type="button" value="Alterar" id="btAlterar" onclick="alterar()" style="display:none;">
+                    <input type="button" value="Excluir" id="btExcluir" onclick="excluir()" style="display:none;">
+                </div>
+
+                <label for="inputNome_categoria">Nome da Categoria</label>
+                <input type="text" name="inputNome_categoria" id="inputNome_categoria" placeholder="Ex: Bebidas">
+
+                <div id="divAviso">Informe o Id e clique em Procure</div>
+
+                <div class="botoes-acao">
+                    <input type="button" value="Salvar" id="btSalvar" onclick="salvar()" style="display:none;">
+                    <input type="button" value="Cancelar" id="btCancelar" onclick="cancelarOperacao()" style="display:none;">
+                </div>
+            </section>
+        </div>
+
+        <section class="lista-filmes">
+            <h3>Categorias de produtos Cadastradas</h3>
+            <div id="outputSaida">Carregando...</div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Sistema CRUD Categorias de produtos - Gabriel S. M32 - Todos os direitos reservados.</p>
+    </footer>
+
+    <script src="./categoria.js"></script>
+</body>
+
+</html>

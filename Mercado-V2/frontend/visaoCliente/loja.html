@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mercado V.2 - Loja</title>
+    <link rel="stylesheet" href="loja.css">
+</head>
+<body>
+
+    <!-- ===================== CABEÇALHO ===================== -->
+    <header class="cabecalho">
+        <div class="cabecalho__conteudo">
+
+            <a class="logo" href="loja.html" aria-label="Mercado V.2 - página inicial">
+                <span class="logo__marca">Mercado</span><span class="logo__versao">V.2</span>
+            </a>
+
+            <div class="pesquisa" role="search">
+                <input type="search" id="campoPesquisa" class="pesquisa__campo"
+                       placeholder="Buscar produtos..." aria-label="Buscar produtos" autocomplete="off">
+                <button type="button" id="botaoLimparPesquisa" class="pesquisa__limpar" hidden
+                        aria-label="Limpar pesquisa">&times;</button>
+                <button type="button" id="botaoPesquisar" class="botao botao--primario pesquisa__botao">
+                    Pesquisar
+                </button>
+            </div>
+
+            <div class="acoes">
+                <!-- Perfil -->
+                <div class="perfil">
+                    <button type="button" id="botaoPerfil" class="acoes__botao"
+                            aria-haspopup="true" aria-expanded="false">
+                        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path>
+                        </svg>
+                        <span id="textoPerfil" class="acoes__texto">Entrar</span>
+                    </button>
+
+                    <!-- Menu exibido somente para cliente conectado -->
+                    <nav id="menuPerfil" class="menu-perfil" hidden aria-label="Menu da conta">
+                        <a id="linkMeusPedidos" href="#" class="menu-perfil__item">Meus pedidos</a>
+                        <a id="linkDadosConta" href="#" class="menu-perfil__item">Dados da conta</a>
+                        <button type="button" id="botaoSair" class="menu-perfil__item">Sair da conta</button>
+                    </nav>
+                </div>
+
+                <!-- Carrinho -->
+                <button type="button" id="botaoCarrinho" class="acoes__botao"
+                        aria-label="Abrir carrinho" aria-controls="painelCarrinho">
+                    <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="9" cy="20" r="1.5"></circle>
+                        <circle cx="18" cy="20" r="1.5"></circle>
+                        <path d="M2 3h3l2.6 12.2a1 1 0 0 0 1 .8h9.7a1 1 0 0 0 1-.8L21 7H6"></path>
+                    </svg>
+                    <span id="contadorCarrinho" class="contador" aria-live="polite">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===================== CONTEÚDO PRINCIPAL ===================== -->
+    <main class="principal">
+
+        <!-- Avisos gerais (erros de comunicação, cadastro incompleto...) -->
+        <div id="aviso" class="aviso" role="alert" hidden></div>
+
+        <!-- Carrossel -->
+        <section id="secaoCarrossel" class="carrossel" aria-label="Produtos em destaque" hidden>
+            <h2 class="secao__titulo">Produtos em destaque</h2>
+            <div class="carrossel__area">
+                <button type="button" id="carrosselAnterior" class="carrossel__seta carrossel__seta--anterior"
+                        aria-label="Produtos anteriores">&#8249;</button>
+
+                <div class="carrossel__janela" id="carrosselJanela">
+                    <ul class="carrossel__trilha" id="carrosselTrilha"></ul>
+                </div>
+
+                <button type="button" id="carrosselProximo" class="carrossel__seta carrossel__seta--proximo"
+                        aria-label="Próximos produtos">&#8250;</button>
+            </div>
+        </section>
+
+        <!-- Grade de produtos -->
+        <section class="catalogo" aria-label="Catálogo de produtos">
+            <h2 class="secao__titulo" id="tituloCatalogo">Todos os produtos</h2>
+            <p id="infoPesquisa" class="catalogo__info" hidden></p>
+            <p id="mensagemCarregando" class="catalogo__mensagem">Carregando produtos...</p>
+            <ul id="gradeProdutos" class="grade"></ul>
+        </section>
+    </main>
+
+    <footer class="rodape">
+        <p>Mercado V.2 &mdash; projeto acadêmico</p>
+    </footer>
+
+    <!-- Mensagem discreta (toast) -->
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <!-- ===================== PAINEL LATERAL DO CARRINHO ===================== -->
+    <div id="fundoCarrinho" class="fundo-carrinho" hidden></div>
+
+    <aside id="painelCarrinho" class="painel-carrinho" aria-label="Carrinho de compras" aria-hidden="true">
+        <div class="painel-carrinho__topo">
+            <h2>Meu carrinho</h2>
+            <button type="button" id="botaoFecharCarrinho" class="painel-carrinho__fechar"
+                    aria-label="Fechar carrinho">&times;</button>
+        </div>
+
+        <div id="carrinhoVazio" class="carrinho-vazio" hidden>
+            <p>Seu carrinho está vazio.</p>
+            <button type="button" id="botaoContinuarComprando" class="botao botao--primario">
+                Continuar comprando
+            </button>
+        </div>
+
+        <ul id="listaCarrinho" class="lista-carrinho"></ul>
+
+        <div id="rodapeCarrinho" class="painel-carrinho__rodape" hidden>
+            <div class="total">
+                <span>Total</span>
+                <strong id="totalCarrinho">R$ 0,00</strong>
+            </div>
+            <button type="button" id="botaoFinalizar" class="botao botao--primario botao--largo">
+                Finalizar compra
+            </button>
+        </div>
+    </aside>
+
+    <script src="loja.js"></script>
+</body>
+</html>

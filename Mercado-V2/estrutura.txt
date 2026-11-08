@@ -1,0 +1,24 @@
+Mercado V.2
+|
+|-- backend/
+|   |-- controllers/
+|   |-- routes/
+|   |-- database.js
+|   |-- server.js
+|   `-- .env.example
+|-- frontend/
+|   |-- menu.html, menu.css, menu.js
+|   |-- cargo/
+|   |-- categoria/
+|   |-- fornecedor/
+|   |-- pessoa/
+|   |-- produto/
+|   |-- unidade_medida/
+|   |-- login/             (a implementar)
+|   |-- visaoCliente/      (a implementar)
+|   `-- visaoGerente/      (a implementar)
+|-- imagens/
+|-- documentacao/
+|-- index.html
+|-- package.json
+`-- README.md
