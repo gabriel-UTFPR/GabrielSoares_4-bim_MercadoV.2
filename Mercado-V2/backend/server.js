@@ -19,7 +19,10 @@ const CAMINHO_LOJA = path.join(
 
 // Configurações gerais
 app.use(cors({
-    origin: 'http://localhost:5500',
+    origin: [
+        'http://127.0.0.1:5500',
+        'http://localhost:5500'
+    ],
     credentials: true
 }));
 app.use(express.json());
@@ -37,6 +40,10 @@ const clienteRoutes = require('./routes/clienteRoutes');
 const funcionarioRoutes = require('./routes/funcionarioRoutes');
 const pessoaRoutes = require('./routes/pessoaRoutes');
 const authRoutes = require('./routes/authRoutes');
+const finalizarPedidoRoutes = require('./routes/finalizarPedidoRoutes');
+const enderecoPedidoRoutes = require('./routes/enderecoPedidoRoutes');
+const freteRoutes = require('./routes/freteRoutes');
+const clienteAreaRoutes = require('./routes/clienteAreaRoutes');
 
 app.use('/produto', produtoRoutes);
 app.use('/categoria', categoriaRoutes);
@@ -47,7 +54,10 @@ app.use('/cliente', clienteRoutes);
 app.use('/funcionario', funcionarioRoutes);
 app.use('/pessoa', pessoaRoutes);
 app.use('/auth', authRoutes);
-
+app.use('/pedido', finalizarPedidoRoutes);
+app.use('/endereco-pedido', enderecoPedidoRoutes);
+app.use('/frete', freteRoutes);
+app.use('/cliente-area', clienteAreaRoutes);
 // Página inicial: sempre a loja
 app.get('/', (req, res) => {
     res.sendFile(CAMINHO_LOJA);

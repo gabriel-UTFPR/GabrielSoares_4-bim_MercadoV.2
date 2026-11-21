@@ -1,223 +1,201 @@
-const crypto = require('crypto');
 const { query } = require('../database');
-const {
-    enviarCodigoVerificacao,
-    validarCodigoVerificacao
-} = require('../services/codigoVerificacaoService');
+const { enviarCodigoVerificacao, validarCodigoVerificacao } = require('../services/codigoVerificacaoService');
+const { criarSessao, revogarSessao } = require('../services/sessaoService');
 
-const {
-    criarSessao,
-    buscarSessao,
-    revogarSessao
-} = require('../services/sessaoService');
+const opcoesCookie = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/'
+};
 
-// Cria um identificador temporário e assinado para o login.
-function gerarTicketLogin(cpf) {
-    const segredo = process.env.CODIGO_VERIFICACAO_SECRET;
-
-    if (!segredo) {
-        throw new Error('Chave de verificação não configurada.');
-    }
-
-    const dados = Buffer.from(JSON.stringify({
-        cpf,
-        expiracao: Date.now() + (5 * 60 * 1000)
-    })).toString('base64url');
-
-    const assinatura = crypto
-        .createHmac('sha256', segredo)
-        .update(dados)
-        .digest('base64url');
-
-    return `${dados}.${assinatura}`;
+function definirCookie(res, nome, valor, maxAge) {
+    res.cookie(nome, valor, { ...opcoesCookie, maxAge });
 }
 
-// PRIMEIRA ETAPA: verificar e-mail e senha
 exports.iniciarLogin = async (req, res) => {
     try {
-        const email = String(req.body.email || '')
-            .trim()
-            .toLowerCase();
-
+        const email = String(req.body.email || '').trim().toLowerCase();
         const senha = req.body.senha;
 
-        // Verifica os campos recebidos.
         if (!email || typeof senha !== 'string' || !senha) {
-            return res.status(400).json({
-                sucesso: false,
-                mensagem: 'Informe o e-mail e a senha.'
-            });
+            return res.status(400).json({ sucesso: false, mensagem: 'Informe e-mail e senha.' });
         }
 
-        // Localiza a pessoa e verifica a senha usando o hash do banco.
         const resultado = await query(`
-            SELECT
-                cpf_pessoa,
-                email_pessoa,
-                (crypt($2, senha_hash) = senha_hash) AS senha_valida
+            SELECT cpf_pessoa, email_pessoa
             FROM public.pessoa
-            WHERE LOWER(email_pessoa) = $1
+            WHERE lower(email_pessoa) = $1
               AND senha_hash IS NOT NULL
+              AND senha_hash = crypt($2, senha_hash)
             LIMIT 1
         `, [email, senha]);
 
-        // Não revela se o e-mail ou a senha estão incorretos.
-        if (
-            resultado.rows.length === 0 ||
-            !resultado.rows[0].senha_valida
-        ) {
-            return res.status(401).json({
-                sucesso: false,
-                mensagem: 'E-mail ou senha incorretos.'
-            });
+        if (!resultado.rows.length) {
+            return res.status(401).json({ sucesso: false, mensagem: 'E-mail ou senha incorretos.' });
         }
 
         const pessoa = resultado.rows[0];
 
-        // Envia o código de verificação para o e-mail cadastrado.
-        await enviarCodigoVerificacao(
-        pessoa.cpf_pessoa,
-        pessoa.email_pessoa,
-        'LOGIN'
-);
+        await enviarCodigoVerificacao(pessoa.cpf_pessoa, pessoa.email_pessoa, 'LOGIN');
 
-        // Gera o ticket temporário de login.
-        const ticket = gerarTicketLogin(pessoa.cpf_pessoa);
+        definirCookie(res, 'login_pendente', pessoa.cpf_pessoa, 5 * 60 * 1000);
 
-// Armazena o ticket em um cookie temporário.
-     res.cookie('login_pendente', ticket, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 5 * 60 * 1000,
-        path: '/auth'
-        });
-
-
-
-        return res.status(200).json({
-            sucesso: true,
-            mensagem: 'Um código de verificação foi enviado ao seu e-mail.',
-            proximaEtapa: 'CODIGO'
-        });
-
+        return res.json({ sucesso: true, mensagem: 'Código enviado para seu e-mail.' });
     } catch (erro) {
         console.error('Erro ao iniciar login:', erro);
-
-        return res.status(500).json({
-            sucesso: false,
-            mensagem: 'Não foi possível iniciar o login. Tente novamente.'
-        });
+        return res.status(500).json({ sucesso: false, mensagem: 'Não foi possível iniciar o login. Verifique o serviço de e-mail.' });
     }
 };
 
-
-function validarTicketLogin(ticket) {
-    if (!ticket || typeof ticket !== 'string') {
-        return null;
-    }
-
-    const partes = ticket.split('.');
-
-    if (partes.length !== 2) {
-        return null;
-    }
-
-    const [dados, assinatura] = partes;
-    const segredo = process.env.CODIGO_VERIFICACAO_SECRET;
-
-    if (!segredo) {
-        throw new Error('Chave de verificação não configurada.');
-    }
-
-    const assinaturaEsperada = crypto
-        .createHmac('sha256', segredo)
-        .update(dados)
-        .digest('base64url');
-
-    const assinaturaBuffer = Buffer.from(assinatura);
-    const esperadaBuffer = Buffer.from(assinaturaEsperada);
-
-    if (
-        assinaturaBuffer.length !== esperadaBuffer.length ||
-        !crypto.timingSafeEqual(assinaturaBuffer, esperadaBuffer)
-    ) {
-        return null;
-    }
-
-    try {
-        const conteudo = JSON.parse(
-            Buffer.from(dados, 'base64url').toString('utf8')
-        );
-
-        if (
-            !conteudo.cpf ||
-            !conteudo.expiracao ||
-            Date.now() > conteudo.expiracao
-        ) {
-            return null;
-        }
-
-        return conteudo.cpf;
-    } catch {
-        return null;
-    }
-}
-
-
- // SEGUNDA ETAPA: validar o código de verificação
 exports.validarLogin = async (req, res) => {
     try {
+        const cpf = req.cookies?.login_pendente;
         const codigo = String(req.body.codigo || '').trim();
 
-        // Recupera o CPF pelo ticket temporário.
-        const cpf = validarTicketLogin(
-            req.cookies?.login_pendente
-        );
-
         if (!cpf) {
-            res.clearCookie('login_pendente', {
-                path: '/auth'
-            });
+            return res.status(401).json({ sucesso: false, mensagem: 'A etapa de login expirou. Entre novamente.' });
+        }
 
-            return res.status(401).json({
-                sucesso: false,
-                mensagem: 'Sua etapa de login expirou. Faça o login novamente.'
+        const valido = await validarCodigoVerificacao(cpf, codigo, 'LOGIN');
+
+        if (!valido) {
+            return res.status(401).json({ sucesso: false, mensagem: 'Código inválido ou expirado.' });
+        }
+
+        const resultado = await query(`
+            SELECT
+                EXISTS (SELECT 1 FROM public.cliente c WHERE c.pessoa_cpf_pessoa = $1) AS eh_cliente,
+                EXISTS (
+                    SELECT 1
+                    FROM public.funcionario f
+                    JOIN public.cargo c ON c.id_cargo = f.cargo_id_cargo
+                    WHERE f.pessoa_cpf_pessoa = $1
+                      AND lower(c.nome_cargo) = 'gerente'
+                ) AS eh_gerente
+        `, [cpf]);
+
+        const pessoa = resultado.rows[0];
+        const opcoes = [];
+        if (pessoa.eh_cliente) opcoes.push('CLIENTE');
+        if (pessoa.eh_gerente) opcoes.push('GERENTE');
+
+        if (!opcoes.length) {
+            res.clearCookie('login_pendente', { path: '/' });
+            return res.status(403).json({ sucesso: false, mensagem: 'Esta conta não possui um tipo de acesso disponível.' });
+        }
+
+        if (opcoes.length === 1) {
+            const tipo = opcoes[0];
+            const { token, sessao } = await criarSessao(cpf, tipo);
+            definirCookie(res, 'sessao', token, 30 * 24 * 60 * 60 * 1000);
+            res.clearCookie('login_pendente', { path: '/' });
+
+            return res.json({
+                sucesso: true,
+                mensagem: 'Login realizado com sucesso.',
+                proximaEtapa: tipo === 'CLIENTE' ? 'ENTRAR_LOJA' : 'ENTRAR_GERENCIAMENTO',
+                sessao
             });
         }
 
-        if (!codigo) {
-            return res.status(400).json({
-                sucesso: false,
-                mensagem: 'Informe o código de verificação.'
-            });
-        }
+        definirCookie(res, 'acesso_pendente', cpf, 5 * 60 * 1000);
+        res.clearCookie('login_pendente', { path: '/' });
 
-        // Confere o código enviado ao e-mail.
-        const codigoValido = await validarCodigoVerificacao(
-            cpf,
-            codigo,
-            'LOGIN'
-        );
-
-        if (!codigoValido) {
-            return res.status(401).json({
-                sucesso: false,
-                mensagem: 'Código inválido, expirado ou já utilizado.'
-            });
-        }
-
-        return res.status(200).json({
+        return res.json({
             sucesso: true,
-            mensagem: 'Código validado com sucesso.'
+            mensagem: 'Escolha como deseja acessar.',
+            proximaEtapa: 'ESCOLHER_ACESSO',
+            opcoes
+        });
+    } catch (erro) {
+        console.error('Erro ao validar login:', erro);
+        return res.status(500).json({ sucesso: false, mensagem: 'Não foi possível validar o código.' });
+    }
+};
+
+exports.escolherAcesso = async (req, res) => {
+    try {
+        const cpf = req.cookies?.acesso_pendente;
+        const tipo = String(req.body.tipoAcesso || '').toUpperCase();
+
+        if (!cpf || !['CLIENTE', 'GERENTE'].includes(tipo)) {
+            return res.status(401).json({ sucesso: false, mensagem: 'Escolha de acesso inválida ou expirada.' });
+        }
+
+        const verificacao = tipo === 'CLIENTE'
+            ? await query('SELECT 1 FROM public.cliente WHERE pessoa_cpf_pessoa = $1', [cpf])
+            : await query(`
+                SELECT 1
+                FROM public.funcionario f
+                JOIN public.cargo c ON c.id_cargo = f.cargo_id_cargo
+                WHERE f.pessoa_cpf_pessoa = $1 AND lower(c.nome_cargo) = 'gerente'
+            `, [cpf]);
+
+        if (!verificacao.rows.length) {
+            return res.status(403).json({ sucesso: false, mensagem: 'Você não possui permissão para esse acesso.' });
+        }
+
+        const { token, sessao } = await criarSessao(cpf, tipo);
+        definirCookie(res, 'sessao', token, 30 * 24 * 60 * 60 * 1000);
+        res.clearCookie('acesso_pendente', { path: '/' });
+
+        return res.json({
+            sucesso: true,
+            mensagem: 'Acesso autorizado.',
+            proximaEtapa: tipo === 'CLIENTE' ? 'ENTRAR_LOJA' : 'ENTRAR_GERENCIAMENTO',
+            sessao
+        });
+    } catch (erro) {
+        console.error('Erro ao escolher acesso:', erro);
+        return res.status(500).json({ sucesso: false, mensagem: 'Não foi possível selecionar o acesso.' });
+    }
+};
+
+exports.logout = async (req, res) => {
+    try {
+        const token = req.cookies?.sessao;
+        await revogarSessao(token);
+        res.clearCookie('sessao', { path: '/' });
+        return res.json({ sucesso: true, mensagem: 'Sessão encerrada.' });
+    } catch (erro) {
+        console.error('Erro ao encerrar sessão:', erro);
+        return res.status(500).json({ sucesso: false, mensagem: 'Não foi possível encerrar a sessão.' });
+    }
+};
+
+exports.minhaSessao = async (req, res) => {
+    try {
+        const resultado = await query(`
+            SELECT nome_pessoa
+            FROM public.pessoa
+            WHERE cpf_pessoa = $1
+            LIMIT 1
+        `, [req.sessao.cpf_pessoa]);
+
+        if (!resultado.rows.length) {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Pessoa não encontrada.'
+            });
+        }
+
+        return res.json({
+            sucesso: true,
+            sessao: {
+                cpf_pessoa: req.sessao.cpf_pessoa,
+                tipo_acesso: req.sessao.tipo_acesso,
+                data_expiracao: req.sessao.data_expiracao,
+                nome_pessoa: resultado.rows[0].nome_pessoa
+            }
         });
 
     } catch (erro) {
-        console.error('Erro ao validar login:', erro);
+        console.error('Erro ao consultar sessão:', erro);
 
         return res.status(500).json({
             sucesso: false,
-            mensagem: 'Não foi possível validar o código.'
+            mensagem: 'Não foi possível consultar sua sessão.'
         });
     }
 };
