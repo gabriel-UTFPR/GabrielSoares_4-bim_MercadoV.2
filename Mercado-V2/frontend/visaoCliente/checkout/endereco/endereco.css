@@ -1,0 +1,360 @@
+
+:root {
+    --azul-escuro: #0b3d91;
+    --azul: #1a62d6;
+    --azul-hover: #144fb0;
+    --azul-claro: #e8f0fd;
+    --fundo: #f4f7fb;
+    --branco: #ffffff;
+    --texto: #1f2937;
+    --texto-suave: #6b7280;
+    --borda: #dbe3ef;
+    --erro: #b42318;
+    --raio: 12px;
+    --sombra: 0 2px 8px rgba(11, 61, 145, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+    line-height: 1.4;
+}
+
+/* Cabeçalho */
+
+.cabecalho {
+    background: var(--branco);
+    border-bottom: 1px solid var(--borda);
+}
+
+.cabecalho__conteudo {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 18px 16px;
+}
+
+.logo {
+    color: var(--azul-escuro);
+    font-size: 24px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.logo__versao {
+    color: var(--azul);
+}
+
+/* Conteúdo principal */
+
+.principal {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 16px 40px;
+}
+
+h1 {
+    margin-top: 32px;
+    font-size: 28px;
+    color: var(--azul-escuro);
+}
+
+.descricao {
+    margin-top: 6px;
+    color: var(--texto-suave);
+}
+
+/* Indicador de etapas */
+
+.etapas {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 24px;
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+}
+
+.etapa {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--texto-suave);
+    font-size: 14px;
+}
+
+.etapa__numero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--borda);
+    border-radius: 50%;
+    font-weight: 600;
+}
+
+.etapa--ativa {
+    color: var(--azul);
+    font-weight: 700;
+}
+
+.etapa--ativa .etapa__numero {
+    background: var(--azul);
+    border-color: var(--azul);
+    color: var(--branco);
+}
+
+.etapa--concluida {
+    color: var(--azul);
+    font-weight: 600;
+}
+
+.etapa--concluida .etapa__numero {
+    background: var(--azul-claro);
+    border-color: var(--azul);
+    color: var(--azul);
+}
+
+/* Organização da página */
+
+.conteudo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 24px;
+    align-items: start;
+    margin-top: 24px;
+}
+
+.endereco,
+.resumo {
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+    padding: 20px;
+}
+
+.endereco h2,
+.resumo h2 {
+    color: var(--azul-escuro);
+    font-size: 19px;
+    margin-bottom: 20px;
+}
+
+/* Campos do formulário */
+
+#formEndereco {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.campo label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.campo label span {
+    color: var(--texto-suave);
+    font-weight: 400;
+}
+
+.campo input {
+    width: 100%;
+    height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--texto);
+    background: var(--branco);
+}
+
+.campo input:focus {
+    border-color: var(--azul);
+    box-shadow: 0 0 0 3px rgba(26, 98, 214, 0.12);
+}
+
+.campo input:disabled {
+    background: var(--fundo);
+    color: var(--texto-suave);
+    cursor: not-allowed;
+}
+
+.campo small {
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+/* CEP */
+
+#cep {
+    letter-spacing: 1px;
+}
+
+/* Mensagens */
+
+.mensagem {
+    grid-column: 1 / -1;
+    color: var(--erro);
+    font-size: 14px;
+}
+
+/* Resumo da compra */
+
+.resumo__linha {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--borda);
+    font-size: 14px;
+}
+
+.resumo__linha strong {
+    text-align: right;
+}
+
+.resumo__linha--total {
+    margin-top: 8px;
+    border-bottom: none;
+    color: var(--azul-escuro);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.resumo__observacao {
+    margin-top: 12px;
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+/* Ações */
+
+.acoes {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.link-voltar {
+    color: var(--azul);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.link-voltar:hover {
+    text-decoration: underline;
+}
+
+.botao {
+    padding: 13px 18px;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.botao--primario {
+    background: var(--azul);
+    color: var(--branco);
+}
+
+.botao--primario:hover {
+    background: var(--azul-hover);
+}
+
+.botao:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsividade */
+
+@media (max-width: 768px) {
+    .conteudo {
+        grid-template-columns: 1fr;
+    }
+
+    .etapas {
+        padding: 14px;
+        gap: 8px;
+    }
+
+    .etapa {
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .principal {
+        padding: 20px 12px 30px;
+    }
+
+    h1 {
+        font-size: 23px;
+    }
+
+    .etapas {
+        padding: 12px 6px;
+    }
+
+    .etapa {
+        font-size: 10px;
+    }
+
+    .etapa__numero {
+        width: 26px;
+        height: 26px;
+    }
+
+    .endereco,
+    .resumo {
+        padding: 16px;
+    }
+
+    #formEndereco {
+        grid-template-columns: 1fr;
+    }
+
+    .acoes {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .link-voltar {
+        text-align: center;
+        padding: 8px;
+    }
+}
+#statusCEP.status-erro {
+    color: #b42318 !important;
+}

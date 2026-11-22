@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus pedidos - Mercado V.2</title>
+    <link rel="stylesheet" href="pedidos.css">
+</head>
+<body>
+    <header class="cabecalho">
+        <div class="cabecalho__conteudo">
+            <a class="logo" href="../loja/loja.html" aria-label="Mercado V.2 - página inicial">
+                <span class="logo__marca">Mercado</span><span class="logo__versao">V.2</span>
+            </a>
+
+            <nav class="navegacao" aria-label="Navegação da conta">
+                <a href="../loja/loja.html">Voltar à loja</a>
+                <a href="../minhaConta/conta.html">Minha conta</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="pagina">
+        <header class="titulo">
+            <span class="eyebrow">ÁREA DO CLIENTE</span>
+            <h1>Meus pedidos</h1>
+            <p>Acompanhe suas compras e consulte os detalhes de cada pedido.</p>
+        </header>
+
+        <div id="mensagem" class="mensagem" role="status" aria-live="polite">
+            Carregando seus pedidos...
+        </div>
+        <section id="listaPedidos" class="lista-pedidos" aria-live="polite"></section>
+    </main>
+
+    <footer class="rodape">
+        <p>Mercado V.2 </p>
+    </footer>
+
+    <script src="pedidos.js"></script>
+</body>
+</html>

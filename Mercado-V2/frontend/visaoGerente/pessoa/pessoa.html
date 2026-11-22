@@ -11,7 +11,9 @@
 <body>
     <header>
         <h1>Cadastro de Pessoas</h1>
-        <img src="http://localhost:3001/imagens/carrinho.png" alt="Carrinho de compras">
+        <a class="logo-mercado" href="../menu/menu.html" aria-label="Voltar ao menu dos CRUDs">
+            <span class="logo-mercado__marca">Mercado</span><span class="logo-mercado__versao">V.2</span>
+        </a>
         <p>Gerencie pessoas do sistema.</p>
     </header>
 
@@ -21,9 +23,9 @@
 
             <form id="pessoaForm">
                 <div class="search-container">
-                    <label for="searchId">Buscar por ID:</label>
+                    <label for="searchId">Buscar por CPF:</label>
                     <div class="search-input-group">
-                        <input type="number" id="searchId" placeholder="Digite o ID para buscar">
+                        <input type="text" id="searchId" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" autocomplete="off" >
                         <button type="button" id="btnBuscar">🔍 Buscar</button>
 
                         <button type="button" id="btnIncluir" class="btn-primary">Incluir</button>
@@ -53,6 +55,17 @@
                     <div class="form-group">
                         <label for="email_pessoa">Email:</label>
                         <input type="email" id="email_pessoa" name="email_pessoa" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="senha_pessoa">Senha:</label>
+                            <input
+                                type="password"
+                                id="senha_pessoa"
+                                name="senha_pessoa"
+                                placeholder="Digite a senha"
+                                autocomplete="new-password"
+                            >
                     </div>
 
                 </fieldset>

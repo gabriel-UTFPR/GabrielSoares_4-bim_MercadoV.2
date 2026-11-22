@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar conta - Mercado V.2</title>
+    <link rel="stylesheet" href="cadastro.css">
+</head>
+<body>
+
+    <main class="container-cadastro">
+
+        <a href="../login/login.html" class="voltar-login" id="linkVoltarLogin">
+            ← Voltar para o login
+        </a>
+
+        <section class="card-cadastro">
+
+            <h1 id="tituloCadastro">Crie sua conta</h1>
+
+            <p class="subtitulo" id="subtituloCadastro">
+                Preencha seus dados para começar a comprar.
+            </p>
+
+            <form id="formCadastro">
+
+                <div class="campo">
+                    <label for="cpf">CPF</label>
+                    <input
+                        type="text"
+                        id="cpf"
+                        name="cpf"
+                        placeholder="000.000.000-00"
+                        maxlength="14"
+                        autocomplete="off"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="nome">Nome completo</label>
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        placeholder="Digite seu nome completo"
+                        maxlength="100"
+                        autocomplete="name"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="dataNascimento">Data de nascimento</label>
+                    <input
+                        type="date"
+                        id="dataNascimento"
+                        name="dataNascimento"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="endereco">Endereço</label>
+                    <input
+                        type="text"
+                        id="endereco"
+                        name="endereco"
+                        placeholder="Rua, número, bairro e cidade"
+                        maxlength="150"
+                        autocomplete="street-address"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="email">E-mail</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="exemplo@email.com"
+                        maxlength="100"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="renda">Renda mensal (R$)</label>
+                    <input
+                        type="number"
+                        id="renda"
+                        name="renda"
+                        placeholder="0,00"
+                        min="0.01"
+                        max="99999999.99"
+                        step="0.01"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="senha">Senha</label>
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Crie uma senha"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="confirmarSenha">Confirmar senha</label>
+                    <input
+                        type="password"
+                        id="confirmarSenha"
+                        name="confirmarSenha"
+                        placeholder="Digite a senha novamente"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="botao-cadastrar" id="botaoCadastrar">
+                    Criar conta
+                </button>
+
+                <p id="mensagemCadastro" class="mensagem" role="status" aria-live="polite"></p>
+
+            </form>
+
+            <section id="etapaVerificacao" class="etapa-verificacao" hidden>
+                <h2>Confirme seu e-mail</h2>
+
+                <p class="texto-verificacao">
+                    Enviamos um código de 6 dígitos para
+                    <strong id="emailConfirmacao"></strong>.
+                    Informe o código para concluir a criação da sua conta.
+                </p>
+
+                <form id="formVerificacao">
+                    <div class="campo campo-codigo">
+                        <label for="codigoVerificacao">Código de confirmação</label>
+                        <input
+                            type="text"
+                            id="codigoVerificacao"
+                            name="codigoVerificacao"
+                            placeholder="000000"
+                            maxlength="6"
+                            inputmode="numeric"
+                            pattern="[0-9]{6}"
+                            autocomplete="one-time-code"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="botao-cadastrar" id="botaoConfirmarCadastro">
+                        Confirmar e criar conta
+                    </button>
+
+                    <p id="mensagemVerificacao" class="mensagem" role="status" aria-live="polite"></p>
+
+                    <button type="button" class="botao-secundario" id="botaoReenviarCodigo">
+                        Reenviar código
+                    </button>
+
+                    <button type="button" class="botao-link" id="botaoVoltarCadastro">
+                        Voltar ao formulário
+                    </button>
+                </form>
+            </section>
+
+            <div class="separador" id="separadorCadastro"></div>
+
+            <p class="texto-login" id="textoLogin">
+                Já possui uma conta?
+                <a href="../login/login.html">Entrar</a>
+            </p>
+
+        </section>
+
+    </main>
+
+    <script src="cadastro.js"></script>
+
+</body>
+</html>

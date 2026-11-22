@@ -44,16 +44,6 @@ header {
     position:relative;
 }
 
-header img {
-    width: 80px;
-    height: 80px;
-    position:absolute;
-    left:40px;
-    top:50%;
-    transform:translateY(-50%);
-    border-radius: 10px;
-}
-
 header h1 {
     margin-bottom: 0.5rem;
     font-size: 2.2rem;
@@ -260,3 +250,64 @@ footer {
         width: auto; 
     }
 }
+
+/* Logo Mercado V.2: mesma identidade visual utilizada na loja. */
+header .logo-mercado {
+    position: absolute;
+    left: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #0b3d91;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: 800;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+header .logo-mercado__marca {
+    color: #0b3d91;
+}
+
+header .logo-mercado__versao {
+    padding: 0 6px;
+    border-radius: 6px;
+    background: #1a62d6;
+    color: #ffffff;
+    font-size: 1.1rem;
+}
+
+header .logo-mercado:hover {
+    filter: brightness(0.96);
+    transform: translateY(-50%) scale(1.02);
+}
+
+@media (max-width: 768px) {
+    header .logo-mercado {
+        left: 12px;
+        top: 12px;
+        transform: none;
+        font-size: 1.15rem;
+        padding: 6px 8px;
+    }
+
+    header .logo-mercado__versao {
+        font-size: 0.9rem;
+    }
+
+    header .logo-mercado:hover {
+        transform: scale(1.02);
+    }
+
+    header {
+        padding-top: 78px;
+    }
+}
+
+header { position: relative; }

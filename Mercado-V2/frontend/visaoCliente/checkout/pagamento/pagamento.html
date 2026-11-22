@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Pagamento - Mercado V.2</title>
+
+    <link rel="stylesheet" href="pagamento.css">
+    <script src="pagamento.js" defer></script>
+</head>
+
+<body>
+
+    <!-- Cabeçalho -->
+    <header class="cabecalho">
+        <div class="cabecalho__conteudo">
+
+            <a href="../../loja/loja.html" class="logo">
+                Mercado <span class="logo__versao">V.2</span>
+            </a>
+
+        </div>
+    </header>
+
+    <main class="principal">
+
+        <!-- Etapas da compra -->
+        <nav class="etapas" aria-label="Etapas da compra">
+
+            <div class="etapa etapa--concluida">
+                <span class="etapa__numero">✓</span>
+                <span>Revisão</span>
+            </div>
+
+            <div class="etapa etapa--concluida">
+                <span class="etapa__numero">✓</span>
+                <span>Endereço</span>
+            </div>
+
+            <div class="etapa etapa--ativa">
+                <span class="etapa__numero">3</span>
+                <span>Pagamento</span>
+            </div>
+
+            <div class="etapa">
+                <span class="etapa__numero">4</span>
+                <span>Finalizado</span>
+            </div>
+
+        </nav>
+
+        <h1>Forma de pagamento</h1>
+
+        <p class="descricao">
+            Escolha como deseja pagar seu pedido.
+        </p>
+
+        <div class="conteudo">
+
+            <!-- Formas de pagamento -->
+            <section class="pagamento">
+
+                <h2>Escolha uma forma de pagamento</h2>
+
+                <form id="formPagamento">
+
+                    <div class="formas-pagamento">
+
+                        <label class="forma-pagamento">
+                            <input
+                                type="radio"
+                                name="formaPagamento"
+                                value="PIX"
+                                required
+                            >
+
+                            <span class="forma-pagamento__conteudo">
+                                <strong>PIX</strong>
+                                <small>Pagamento por transferência instantânea.</small>
+                            </span>
+                        </label>
+
+                        <label class="forma-pagamento">
+                            <input
+                                type="radio"
+                                name="formaPagamento"
+                                value="CARTAO_CREDITO"
+                            >
+
+                            <span class="forma-pagamento__conteudo">
+                                <strong>Cartão de crédito</strong>
+                                <small>Pagamento utilizando cartão de crédito.</small>
+                            </span>
+                        </label>
+
+                        <label class="forma-pagamento">
+                            <input
+                                type="radio"
+                                name="formaPagamento"
+                                value="CARTAO_DEBITO"
+                            >
+
+                            <span class="forma-pagamento__conteudo">
+                                <strong>Cartão de débito</strong>
+                                <small>Pagamento utilizando cartão de débito.</small>
+                            </span>
+                        </label>
+
+                        <label class="forma-pagamento">
+                            <input
+                                type="radio"
+                                name="formaPagamento"
+                                value="DINHEIRO"
+                            >
+
+                            <span class="forma-pagamento__conteudo">
+                                <strong>Dinheiro na entrega</strong>
+                                <small>Pagamento realizado no recebimento do pedido.</small>
+                            </span>
+                        </label>
+
+                    </div>
+
+                    <!-- Informações específicas da forma escolhida -->
+                    <div id="detalhesPagamento" hidden>
+
+                    </div>
+
+                    <!-- Mensagens -->
+                    <p id="mensagemPagamento" class="mensagem" hidden></p>
+
+                    <!-- Ações -->
+                    <div class="acoes">
+
+                        <a
+                            href="../endereco/endereco.html"
+                            class="link-voltar"
+                        >
+                            Voltar
+                        </a>
+
+                        <button
+                            type="submit"
+                            id="botaoFinalizar"
+                            class="botao botao--primario"
+                        >
+                            Finalizar pedido
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+            <!-- Resumo da compra -->
+            <aside class="resumo">
+
+                <h2>Resumo da compra</h2>
+
+                <div class="resumo__linha">
+                    <span>Subtotal</span>
+                    <strong id="subtotal">R$ 0,00</strong>
+                </div>
+
+                <div class="resumo__linha">
+                    <span>Frete</span>
+                    <strong id="valorFrete">R$ 0,00</strong>
+                </div>
+
+                <div class="resumo__linha resumo__linha--total">
+                    <span>Total</span>
+                    <strong id="valorTotal">R$ 0,00</strong>
+                </div>
+
+                <p class="resumo__observacao">
+                    Confira os valores antes de finalizar seu pedido.
+                </p>
+
+            </aside>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>

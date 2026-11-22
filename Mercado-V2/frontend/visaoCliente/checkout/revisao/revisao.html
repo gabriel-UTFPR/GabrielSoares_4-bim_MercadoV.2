@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revisão do pedido - Mercado V.2</title>
+    <link rel="stylesheet" href="revisao.css">
+    <script src="revisao.js" defer></script>
+</head>
+<body>
+
+    <header class="cabecalho">
+        <div class="cabecalho__conteudo">
+            <a href="../../loja/loja.html" class="logo">
+                Mercado <span class="logo__versao">V.2</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="principal">
+
+        <nav class="etapas" aria-label="Etapas da compra">
+            <div class="etapa etapa--ativa">
+                <span class="etapa__numero">1</span>
+                <span>Revisão</span>
+            </div>
+
+            <div class="etapa">
+                <span class="etapa__numero">2</span>
+                <span>Endereço</span>
+            </div>
+
+            <div class="etapa">
+                <span class="etapa__numero">3</span>
+                <span>Pagamento</span>
+            </div>
+
+            <div class="etapa">
+                <span class="etapa__numero">4</span>
+                <span>Finalizado</span>
+            </div>
+        </nav>
+
+        <h1>Revisão do pedido</h1>
+        <p class="descricao">
+            Confira os produtos antes de continuar com sua compra.
+        </p>
+
+        <div class="conteudo">
+
+            <section class="produtos">
+                <h2>Produtos selecionados</h2>
+
+                <div id="listaProdutos">
+                    <!-- Os produtos do carrinho serão inseridos pelo JavaScript. -->
+                </div>
+
+                <p id="mensagemProdutos" class="mensagem" hidden></p>
+
+                <a href="../../loja/loja.html" class="link-voltar">
+                    Voltar à loja
+                </a>
+            </section>
+
+            <aside class="resumo">
+                <h2>Resumo da compra</h2>
+
+                <div class="resumo__linha">
+                    <span>Subtotal</span>
+                    <strong id="subtotal">R$ 0,00</strong>
+                </div>
+
+                <div class="resumo__linha">
+                    <span>Frete</span>
+                    <strong id="valorEntrega">A calcular</strong>
+                </div>
+
+                <div class="resumo__linha resumo__linha--total">
+                    <span>Total</span>
+                    <strong id="valorTotal">R$ 0,00</strong>
+                </div>
+
+                <button type="button" id="botaoContinuar" class="botao botao--primario">
+                    Continuar
+                </button>
+            </aside>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

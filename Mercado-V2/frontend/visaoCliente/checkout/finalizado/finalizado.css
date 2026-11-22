@@ -1,0 +1,25 @@
+:root { --blue-dark:#0b3d91; --blue:#1a62d6; --blue-hover:#144fb0; --blue-light:#e8f0fd; --bg:#f4f7fb; --white:#fff; --text:#1f2937; --muted:#6b7280; --border:#dbe3ef; --green:#067647; --green-bg:#ecfdf3; --radius:14px; --shadow:0 3px 12px rgba(11,61,145,.09); }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
+.cabecalho { background:var(--white); border-bottom:1px solid var(--border); }
+.cabecalho__conteudo { max-width:1100px; margin:auto; padding:18px 16px; }
+.logo { color:var(--blue-dark); font-size:24px; font-weight:700; text-decoration:none; } .logo span { color:var(--blue); }
+.principal { max-width:900px; margin:30px auto; padding:0 16px 40px; }
+.etapas { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:18px 20px; background:var(--white); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
+.etapa { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; }
+.etapa__numero { width:30px; height:30px; display:grid; place-items:center; border:1px solid var(--border); border-radius:50%; font-weight:600; }
+.etapa--concluida { color:var(--green); font-weight:600; } .etapa--concluida .etapa__numero { background:var(--green-bg); border-color:#abefc6; color:var(--green); }
+.etapa--ativa { color:var(--blue); font-weight:700; } .etapa--ativa .etapa__numero { background:var(--blue); color:white; border-color:var(--blue); }
+.confirmacao,.aviso { max-width:650px; margin:26px auto 0; padding:30px; background:var(--white); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); text-align:center; }
+.icone-sucesso { margin:0 auto 14px; width:64px; height:64px; display:grid; place-items:center; border-radius:50%; background:var(--green-bg); color:var(--green); font-size:36px; font-weight:700; }
+h1 { color:var(--blue-dark); font-size:28px; } .descricao { color:var(--muted); margin-top:5px; }
+.numero-pedido { margin:22px 0 8px; padding:14px; background:var(--blue-light); border-radius:10px; color:var(--blue-dark); font-size:18px; }
+.status { color:var(--green); margin-bottom:20px; }
+.resumo { text-align:left; border:1px solid var(--border); border-radius:10px; padding:18px; }
+.resumo h2 { color:var(--blue-dark); font-size:18px; margin-bottom:8px; }
+.linha { display:flex; justify-content:space-between; gap:16px; padding:11px 0; border-bottom:1px solid var(--border); }
+.linha strong { text-align:right; } .linha--total { font-size:18px; color:var(--blue-dark); font-weight:700; border-bottom:0; } .linha--pagamento { border-top:1px solid var(--border); border-bottom:0; margin-top:5px; }
+.observacao { margin:18px 0; color:var(--muted); font-size:12px; }
+.botao { display:inline-block; margin-top:8px; padding:13px 20px; border-radius:8px; background:var(--blue); color:white; font-weight:600; text-decoration:none; } .botao:hover { background:var(--blue-hover); }
+.aviso h1 { font-size:22px; } .aviso p { color:var(--muted); margin:12px 0; }
+@media(max-width:600px) { .principal { margin:20px auto; padding:0 12px 28px; } .etapas { padding:12px 6px; } .etapa { flex-direction:column; gap:4px; font-size:10px; text-align:center; } .etapa__numero { width:26px; height:26px; } .confirmacao,.aviso { padding:20px 16px; } h1 { font-size:23px; } .linha { font-size:14px; } }

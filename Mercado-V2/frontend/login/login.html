@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar - Mercado V.2</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+    <main class="container-login">
+
+       <a href="../visaoCliente/loja/loja.html" class="voltar-loja">← Voltar para a loja</a>
+
+        <section class="card-login">
+
+            <h1>Bem-vindo!</h1>
+            <p class="subtitulo">Entre na sua conta para continuar.</p>
+
+            <form id="formLogin">
+
+                <div class="campo">
+                    <label for="email">E-mail</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Digite seu e-mail"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="senha">Senha</label>
+
+                    <div class="campo-senha">
+                        <input
+                            type="password"
+                            id="senha"
+                            name="senha"
+                            placeholder="Digite sua senha"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            id="mostrarSenha"
+                            aria-label="Mostrar senha"
+                        >
+                            Mostrar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="campo" id="campoCodigo" hidden>
+                    <label for="codigo">Código de verificação</label>
+                        <input
+                            type="text"
+                            id="codigo"
+                            name="codigo"
+                            placeholder="Digite o código recebido por e-mail"
+                            inputmode="numeric"
+                            maxlength="6"
+                            autocomplete="one-time-code"
+                        >
+                    </div>
+
+                <a href="../recuperacao/recuperacao.html" id="linkRecuperar" class="link-recuperar">
+                    Esqueci minha senha
+                </a>
+
+                <button type="submit" class="botao-entrar">
+                    Entrar
+                </button>
+
+                <p id="mensagemLogin" class="mensagem"></p>
+
+
+                <div id="areaEscolhaAcesso" hidden>
+
+                    <h2>Escolha seu acesso</h2>
+
+                    <button type="button" id="entrarComoGerente">
+                        Entrar como gerente
+                    </button>
+
+                    <button type="button" id="entrarComoCliente">
+                        Entrar como cliente
+                    </button>
+
+                    <button type="button" id="cadastrarComoCliente" hidden>
+                        Cadastrar-se como cliente
+                    </button>
+
+                </div>
+
+            </form>
+
+            <div class="separador" id="separadorCadastro"></div>
+
+            <p class="texto-cadastro" id="areaCadastro">
+                Ainda não possui uma conta?
+                <a href="../cadastro/cadastro.html">Cadastre-se</a>
+            </p>
+
+        </section>
+
+    </main>
+
+    <script src="login.js"></script>
+</body>
+</html>

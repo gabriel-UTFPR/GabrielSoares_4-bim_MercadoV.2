@@ -127,27 +127,30 @@ async function procure() {
     if (produto) {
         mostrarDadosProduto(produto);
         carregarImagem(id_produto);
+        document.getElementById('areaReposicaoEstoque').hidden = false;
         visibilidadeDosBotoes('inline', 'none', 'inline', 'inline', 'none');
-        mostrarAviso("Achou no banco, pode alterar ou excluir");
+        mostrarAviso("Achou no banco, pode alterar, excluir ou repor o estoque");
     } else {
         limparAtributos();
         carregarImagem(null);
+        document.getElementById('areaReposicaoEstoque').hidden = true;
         visibilidadeDosBotoes('inline', 'inline', 'none', 'none', 'none');
         mostrarAviso("Não achou no banco, pode inserir");
     }
 }
 
 function inserir() {
+    oQueEstaFazendo = 'inserindo';
+    document.getElementById('areaReposicaoEstoque').hidden = true;
     bloquearAtributos(false);
     visibilidadeDosBotoes('none', 'none', 'none', 'none', 'inline');
-    oQueEstaFazendo = 'inserindo';
     mostrarAviso("INSERINDO - Digite os atributos, escolha a imagem e clique em salvar");
 }
 
 function alterar() {
+    oQueEstaFazendo = 'alterando';
     bloquearAtributos(false);
     visibilidadeDosBotoes('none', 'none', 'none', 'none', 'inline');
-    oQueEstaFazendo = 'alterando';
     mostrarAviso("ALTERANDO - Digite os atributos, mude a imagem (opcional) e clique em salvar");
 }
 
@@ -164,7 +167,7 @@ async function salvar() {
     const id_unidade_medida = document.getElementById("selectId_unidade_medida").value || null;
     const id_categoria = document.getElementById("selectId_categoria").value || null;
     const id_fornecedor = document.getElementById("selectId_Fornecedor").value || null;
-    const estoque = parseInt(document.getElementById("inputQuantidade_estoque_produto").value) || 0;
+    const estoque = Number(document.getElementById("inputQuantidade_estoque_produto").value) || 0;
     const preco = parseFloat(document.getElementById("inputPreco_unitario_produto").value) || 0.0;
 
     const dadosProduto = { id_produto, descricao,id_unidade_medida, id_categoria,id_fornecedor, estoque, preco };
@@ -257,6 +260,10 @@ function limparAtributos() {
     document.getElementById("inputQuantidade_estoque_produto").value = "";
     document.getElementById("inputPreco_unitario_produto").value = "";
     document.getElementById("inputImagem").value = "";
+    const campoReposicao = document.getElementById('inputQuantidadeReposicao');
+    if (campoReposicao) campoReposicao.value = '';
+    const areaReposicao = document.getElementById('areaReposicaoEstoque');
+    if (areaReposicao) areaReposicao.hidden = true;
     bloquearAtributos(true);
 }
 
@@ -266,7 +273,9 @@ function bloquearAtributos(soLeitura) {
     document.getElementById("selectId_categoria").disabled = soLeitura;
     document.getElementById("selectId_Fornecedor").disabled = soLeitura;
     document.getElementById("selectId_unidade_medida").disabled = soLeitura;
-    document.getElementById("inputQuantidade_estoque_produto").readOnly = soLeitura;
+    // O estoque pode ser informado ao inserir, mas depois só muda pela ação de reposição.
+    document.getElementById("inputQuantidade_estoque_produto").readOnly =
+        soLeitura || oQueEstaFazendo !== 'inserindo';
     document.getElementById("inputPreco_unitario_produto").readOnly = soLeitura;
 }
 
@@ -277,4 +286,50 @@ function visibilidadeDosBotoes(btP, btI, btA, btE, btS) {
     document.getElementById("btExcluir").style.display = btE;
     document.getElementById("btSalvar").style.display = btS;
     document.getElementById("btCancelar").style.display = btS;
+}
+
+async function reporEstoque() {
+    const id = document.getElementById('inputId_produto').value.trim();
+    const campo = document.getElementById('inputQuantidadeReposicao');
+    const quantidade = Number(campo.value);
+
+    if (!id || !Number.isInteger(Number(id))) {
+        mostrarAviso('Pesquise um produto antes de repor o estoque.');
+        return;
+    }
+
+    if (!Number.isFinite(quantidade) || quantidade <= 0 || !Number.isInteger(quantidade * 1000)) {
+        mostrarAviso('Informe uma quantidade positiva com até três casas decimais.');
+        campo.focus();
+        return;
+    }
+
+    const botao = document.getElementById('btReporEstoque');
+    botao.disabled = true;
+    botao.textContent = 'Repondo...';
+
+    try {
+        const resposta = await fetch(`${URL_API}/produto/${id}/repor-estoque`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantidade })
+        });
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.sucesso) {
+            throw new Error(dados.mensagem || 'Não foi possível repor o estoque.');
+        }
+
+        document.getElementById('inputQuantidade_estoque_produto').value = dados.produto.estoque;
+        campo.value = '';
+        produto = dados.produto;
+        mostrarAviso(dados.mensagem || 'Estoque reposto com sucesso!');
+        await listar();
+    } catch (erro) {
+        console.error('Erro ao repor estoque:', erro);
+        mostrarAviso(erro.message || 'Erro ao comunicar com o servidor.');
+    } finally {
+        botao.disabled = false;
+        botao.textContent = 'Repor estoque';
+    }
 }

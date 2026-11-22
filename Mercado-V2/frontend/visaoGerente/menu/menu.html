@@ -9,47 +9,94 @@
 </head>
 
 <body>
-    <!-- Cabeçalho Semântico -->
     <header>
-        <img src="http://localhost:3001/imagens/carrinho.png" alt="Carrinho de compras">
+        <!-- Logo igual ao utilizado na loja; clicar retorna ao menu dos CRUDs. -->
+        <a class="logo-mercado" href="menu.html" aria-label="Voltar ao menu dos CRUDs">
+            <span class="logo-mercado__marca">Mercado</span>
+            <span class="logo-mercado__versao">V.2</span>
+        </a>
+
         <h1>Sistema Mercado V.2</h1>
         <p>Selecione o módulo que deseja gerenciar</p>
+
+        <!-- Menu de perfil: nome, alternância para cliente e logout. -->
+        <div class="perfil-menu" id="perfilMenu">
+            <button
+                type="button"
+                id="botaoPerfil"
+                class="perfil-menu__botao"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-controls="opcoesPerfil"
+                hidden
+            >
+                <svg class="perfil-menu__icone" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="8" r="4"></circle>
+                    <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path>
+                </svg>
+                <span id="nomeUsuario">Minha conta</span>
+                <span class="perfil-menu__seta" aria-hidden="true">▾</span>
+            </button>
+
+            <nav id="opcoesPerfil" class="perfil-menu__opcoes" aria-label="Opções da conta" hidden>
+                <button
+                    type="button"
+                    id="botaoTrocarCliente"
+                    class="perfil-menu__item"
+                    hidden
+                >
+                    Acessar loja como cliente
+                </button>
+                <button
+                    type="button"
+                    id="botaoLogout"
+                    class="perfil-menu__item perfil-menu__item--sair"
+                >
+                    Sair da conta
+                </button>
+            </nav>
+        </div>
     </header>
 
-    <!-- Conteúdo Principal -->
     <main class="container-master">
         <div class="menu-grid">
-            <a href="./produto/produto.html" class="card-menu">
+            <a href="../produto/produto.html" class="card-menu">
                 <div class="card-icon">📦</div>
                 <h2>Produtos</h2>
                 <p>Cadastrar, alterar, consultar e excluir produtos do estoque.</p>
             </a>
 
-            <a href="./pessoa/pessoa.html" class="card-menu">
+            <a href="../pedido/pedido.html" class="card-menu">
+                <div class="card-icon">🧾</div>
+                <h2>Pedidos</h2>
+                <p>Consultar pedidos, atualizar pagamento, frete e situação da compra.</p>
+            </a>
+
+            <a href="../pessoa/pessoa.html" class="card-menu">
                 <div class="card-icon">👤</div>
                 <h2>Pessoa</h2>
                 <p>Cadastrar, alterar, consultar e excluir pessoas do sistema.</p>
             </a>
 
-            <a href="./categoria/categoria.html" class="card-menu">
+            <a href="../categoria/categoria.html" class="card-menu">
                 <div class="card-icon">📑</div>
                 <h2>Categorias de produtos</h2>
                 <p>Gerenciar categorias de produtos utilizadas no sistema.</p>
             </a>
-            
-            <a href="./unidade_medida/unidade_medida.html" class="card-menu">
+
+            <a href="../unidade_medida/unidade_medida.html" class="card-menu">
                 <div class="card-icon">📏</div>
                 <h2>Unidades de Medida</h2>
                 <p>Gerenciar unidades de medida utilizadas no sistema.</p>
             </a>
 
-            <a href="./fornecedor/fornecedor.html" class="card-menu">
+            <a href="../fornecedor/fornecedor.html" class="card-menu">
                 <div class="card-icon">🚚</div>
                 <h2>Fornecedores</h2>
-                <p>Gerenciar fornecedores utilizadas no sistema.</p>
+                <p>Gerenciar fornecedores utilizados no sistema.</p>
             </a>
-            
-            <a href="./cargo/cargo.html" class="card-menu">
+
+            <a href="../cargo/cargo.html" class="card-menu">
                 <div class="card-icon">👔</div>
                 <h2>Cargos</h2>
                 <p>Gerenciar cargos utilizados no sistema.</p>
@@ -57,9 +104,8 @@
         </div>
     </main>
 
-    <!-- Rodapé Semântico -->
     <footer>
-        <p>&copy; 2026 Menu Sistema Mercado V.2 - Gabriel S. M32 -  Todos os direitos reservados.</p>
+        <p>&copy; 2026 Menu Sistema Mercado V.2 - Gabriel S. M32 - Todos os direitos reservados.</p>
     </footer>
 
     <script src="menu.js"></script>

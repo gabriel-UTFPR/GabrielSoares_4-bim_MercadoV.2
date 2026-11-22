@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Pedidos - Mercado V.2</title>
+    <link rel="stylesheet" href="pedido.css">
+</head>
+<body>
+    <header>
+        <a class="logo-mercado" href="../menu/menu.html" aria-label="Voltar ao menu dos CRUDs">
+            <span class="logo-mercado__marca">Mercado</span><span class="logo-mercado__versao">V.2</span>
+        </a>
+        <h1>Gerenciamento de Pedidos</h1>
+        <p>Consulte e atualize os pedidos realizados na loja.</p>
+    </header>
+
+    <main class="pagina-pedidos">
+        <section class="painel-listagem">
+            <div class="titulo-secao">
+                <div>
+                    <h2>Pedidos cadastrados</h2>
+                    <p>Selecione um pedido para consultar os itens ou alterar seus dados administrativos.</p>
+                </div>
+                <button type="button" id="botaoAtualizarLista" class="botao botao-secundario">Atualizar lista</button>
+            </div>
+
+            <div class="filtros">
+                <label for="pesquisaPedido">Pesquisar pedido, CPF ou cliente</label>
+                <input type="search" id="pesquisaPedido" placeholder="Ex.: 12, Gabriel ou CPF">
+                <label for="filtroStatus">Filtrar por status</label>
+                <select id="filtroStatus">
+                    <option value="">Todos os status</option>
+                    <option value="CARRINHO">Carrinho</option>
+                    <option value="AGUARDANDO_PAGAMENTO">Aguardando pagamento</option>
+                    <option value="PAGO">Pago</option>
+                    <option value="FINALIZADO">Finalizado</option>
+                    <option value="CANCELADO">Cancelado</option>
+                </select>
+            </div>
+
+            <div class="tabela-responsiva">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Cliente</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoTabelaPedidos">
+                        <tr><td colspan="6" class="estado-tabela">Carregando pedidos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="mensagemLista" class="mensagem" role="status" hidden></p>
+        </section>
+
+        <section class="painel-edicao" id="painelEdicao" hidden>
+            <div class="titulo-secao">
+                <div>
+                    <h2 id="tituloPedido">Pedido</h2>
+                    <p id="subtituloPedido">Confira os dados e faça as alterações permitidas.</p>
+                </div>
+                <span id="seloStatus" class="status">—</span>
+            </div>
+
+            <div class="resumo-cliente" id="resumoCliente"></div>
+
+            <form id="formPedido">
+                <div class="campos-edicao">
+                    <div class="campo">
+                        <label for="statusPedido">Status do pedido</label>
+                        <select id="statusPedido" required>
+                            <option value="CARRINHO">Carrinho</option>
+                            <option value="AGUARDANDO_PAGAMENTO">Aguardando pagamento</option>
+                            <option value="PAGO">Pago</option>
+                            <option value="FINALIZADO">Finalizado</option>
+                            <option value="CANCELADO">Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="formaPagamento">Forma de pagamento</label>
+                        <select id="formaPagamento">
+                            <option value="">Não informada</option>
+                            <option value="PIX">PIX</option>
+                            <option value="CREDITO">Cartão de crédito</option>
+                            <option value="DEBITO">Cartão de débito</option>
+                            <option value="DINHEIRO">Dinheiro</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="valorFrete">Valor do frete (R$)</label>
+                        <input type="number" id="valorFrete" min="0" max="99999999.99" step="0.01" required>
+                    </div>
+                </div>
+
+                <div class="resumo-valores">
+                    <div><span>Subtotal dos produtos</span><strong id="subtotalPedido">R$ 0,00</strong></div>
+                    <div><span>Frete</span><strong id="fretePedido">R$ 0,00</strong></div>
+                    <div class="total"><span>Total</span><strong id="totalPedido">R$ 0,00</strong></div>
+                </div>
+
+                <div class="bloco-detalhes">
+                    <h3>Endereço de entrega</h3>
+                    <p id="enderecoPedido">Endereço não informado.</p>
+                </div>
+
+                <div class="bloco-detalhes">
+                    <h3>Produtos do pedido</h3>
+                    <div class="tabela-responsiva">
+                        <table class="tabela-itens">
+                            <thead><tr><th>Produto</th><th>Quantidade</th><th>Preço unitário</th><th>Total</th></tr></thead>
+                            <tbody id="corpoItensPedido"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="aviso-operacao">
+                    Pedidos não são apagados fisicamente. Para cancelar uma compra, altere o status para <strong>Cancelado</strong>. O banco preserva o histórico e executa os gatilhos de estoque quando aplicável.
+                </div>
+
+                <div class="acoes-formulario">
+                    <button type="submit" id="botaoSalvarPedido" class="botao botao-primario">Salvar alterações</button>
+                    <button type="button" id="botaoFecharEdicao" class="botao botao-secundario">Fechar</button>
+                </div>
+            </form>
+            <p id="mensagemEdicao" class="mensagem" role="status" hidden></p>
+        </section>
+    </main>
+
+    <footer>Mercado V.2 — Administração de pedidos</footer>
+    <script src="pedido.js"></script>
+</body>
+</html>

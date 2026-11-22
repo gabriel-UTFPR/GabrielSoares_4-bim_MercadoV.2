@@ -10,7 +10,9 @@
 
 <body onload="inicializar()">
     <header>
-        <img src="http://localhost:3001/imagens/carrinho.png" alt="Carrinho de compras">
+        <a class="logo-mercado" href="../menu/menu.html" aria-label="Voltar ao menu dos CRUDs">
+            <span class="logo-mercado__marca">Mercado</span><span class="logo-mercado__versao">V.2</span>
+        </a>
         <h1>Cadastro de Produtos</h1>
         <p>Gerencie o estoque de produtos do sistema.</p>
     </header>
@@ -48,8 +50,16 @@
                 </select>
                 
                 <label for="inputQuantidade_estoque_produto">Quantidade em Estoque</label>
-                <input type="number" name="inputQuantidade_estoque_produto" id="inputQuantidade_estoque_produto">
+                <input type="number" name="inputQuantidade_estoque_produto" id="inputQuantidade_estoque_produto" min="0" step="0.001">
                 
+                <div id="areaReposicaoEstoque" class="area-reposicao-estoque" hidden>
+                    <h3>Reposição de estoque</h3>
+                    <p>Informe a quantidade que será adicionada ao estoque atual.</p>
+                    <label for="inputQuantidadeReposicao">Quantidade a repor</label>
+                    <input type="number" id="inputQuantidadeReposicao" min="0.001" step="0.001" placeholder="Ex: 10 ou 1,5">
+                    <button type="button" id="btReporEstoque" onclick="reporEstoque()">Repor estoque</button>
+                </div>
+
                 <label for="inputPreco_unitario_produto">Preço Unitário (R$)</label>
                 <input type="number" step="0.01" name="inputPreco_unitario_produto" id="inputPreco_unitario_produto">
 

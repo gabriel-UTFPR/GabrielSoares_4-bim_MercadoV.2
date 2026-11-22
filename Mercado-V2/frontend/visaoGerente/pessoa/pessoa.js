@@ -1,4 +1,21 @@
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'http://127.0.0.1:3001';
+const campoCPF = document.getElementById('searchId');
+
+campoCPF.addEventListener('input', function () {
+    let cpf = this.value.replace(/\D/g, '');
+
+    cpf = cpf.substring(0, 11);
+
+    if (cpf.length > 9) {
+        cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+    } else if (cpf.length > 6) {
+        cpf = cpf.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
+    } else if (cpf.length > 3) {
+        cpf = cpf.replace(/(\d{3})(\d{0,3})/, '$1.$2');
+    }
+
+    this.value = cpf;
+});
 let currentPersonId = null;
 let operacao = null;
 
@@ -128,7 +145,7 @@ async function funcaoEhCliente(pessoaId) {
 }
 
 async function buscarPessoa() {
-    const id = searchId.value.trim();
+   const id = searchId.value.replace(/\D/g, '');
     if (!id) {
         mostrarMensagem('Digite um CPF para buscar', 'warning');
         return;
@@ -146,7 +163,7 @@ async function buscarPessoa() {
             mostrarMensagem('Pessoa encontrada!', 'success');
         } else {
             limparFormulario();
-            searchId.value = id;
+            searchId.value = id.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
             mostrarBotoes(true, true, false, false, false, false);
             mostrarMensagem('Pessoa não encontrada. Você pode incluir uma nova pessoa.', 'info');
             bloquearCampos(false);
@@ -158,8 +175,11 @@ async function buscarPessoa() {
 }
 
 async function preencherFormulario(pessoa) {
-    currentPersonId = pessoa.cpf_pessoa;
-    searchId.value = pessoa.cpf_pessoa;
+    currentPersonId = String(pessoa.cpf_pessoa).replace(/\D/g, '');
+searchId.value = currentPersonId.replace(
+    /(\d{3})(\d{3})(\d{3})(\d{2})/,
+    '$1.$2.$3-$4'
+);
     document.getElementById('nome_pessoa').value = pessoa.nome_pessoa || '';
 
     if (pessoa.data_nascimento_pessoa) {
@@ -199,7 +219,7 @@ async function preencherFormulario(pessoa) {
 
 async function incluirPessoa() {
     mostrarMensagem('Digite os dados!', 'success');
-    currentPersonId = searchId.value;
+    currentPersonId = searchId.value.replace(/\D/g, '');
     limparFormulario();
     searchId.value = currentPersonId;
     bloquearCampos(true);
@@ -218,7 +238,7 @@ async function alterarPessoa() {
 
 async function excluirPessoa() {
     mostrarMensagem('Excluindo pessoa...', 'info');
-    currentPersonId = searchId.value;
+  currentPersonId = searchId.value.replace(/\D/g, '');
     searchId.disabled = true;
     bloquearCampos(false);
     mostrarBotoes(false, false, false, false, true, true);
@@ -228,11 +248,12 @@ async function excluirPessoa() {
 async function salvarOperacao() {
     const formData = new FormData(form);
     const pessoa = {
-        cpf_pessoa: searchId.value.trim(),
+        cpf_pessoa: searchId.value.replace(/\D/g, ''),
         nome_pessoa: formData.get('nome_pessoa'),
         data_nascimento_pessoa: converterDataParaISO(formData.get('data_nascimento')) || null,
         endereco_pessoa: formData.get('endereco_pessoa'),
-        email_pessoa: formData.get('email_pessoa')
+        email_pessoa: formData.get('email_pessoa'),
+        senha_pessoa: formData.get('senha_pessoa')
     };
 
     let funcionario = null;
@@ -319,15 +340,18 @@ async function salvarOperacao() {
                         });
                     }
                 } else {
-                    try {
+                    // Só tenta remover quando a pessoa realmente possui cadastro de cliente.
+                    const respVerifCli = await fetch(caminhoCliente);
+                    if (respVerifCli.ok) {
                         const respCli = await fetch(caminhoCliente, { method: 'DELETE' });
                         const dataCli = await respCli.json().catch(() => ({}));
-                        if (respCli.status === 409 || dataCli.sucesso === false) {
-                            alert(dataCli.mensagem || 'Não foi possível remover o cliente');
+
+                        if (!respCli.ok || dataCli.sucesso === false) {
+                            const mensagem = dataCli.mensagem || dataCli.error ||
+                                'Não foi possível remover o cadastro de cliente.';
                             document.getElementById('checkboxCliente').checked = true;
+                            throw new Error(mensagem);
                         }
-                    } catch (error) {
-                        console.error('Erro ao excluir cliente:', error);
                     }
                 }
 
@@ -365,7 +389,15 @@ async function salvarOperacao() {
             case 'excluir':
                 const respCliDel = await fetch(caminhoCliente);
                 if (respCliDel.status === 200) {
-                    await fetch(caminhoCliente, { method: 'DELETE' });
+                    const respostaExcluirCliente = await fetch(caminhoCliente, { method: 'DELETE' });
+                    const dadosExcluirCliente = await respostaExcluirCliente.json().catch(() => ({}));
+
+                    if (!respostaExcluirCliente.ok || dadosExcluirCliente.sucesso === false) {
+                        throw new Error(
+                            dadosExcluirCliente.mensagem || dadosExcluirCliente.error ||
+                            'Não é possível excluir esta pessoa porque o cadastro de cliente possui pedidos.'
+                        );
+                    }
                 }
 
                 const respFuncDel = await fetch(caminhoFunc);
@@ -386,10 +418,16 @@ async function salvarOperacao() {
                 carregarPessoas();
                 break;
         }
-    } catch (error) {
-        console.error('Erro salvarOperacao:', error);
-        mostrarMensagem(error.message || 'Erro ao processar operação', 'error');
-    } finally {
+ } catch (error) {
+    console.error('Erro salvarOperacao:', error);
+    mostrarMensagem(error.message || 'Erro ao processar operação', 'error');
+
+    if (operacao === 'incluir') {
+        limparFormulario();
+        searchId.value = '';
+        currentPersonId = null;
+    }
+} finally {
         mostrarBotoes(true, false, false, false, false, false);
         bloquearCampos(false);
         document.getElementById('searchId').focus();

@@ -20,7 +20,7 @@
                 <input type="search" id="campoPesquisa" class="pesquisa__campo"
                        placeholder="Buscar produtos..." aria-label="Buscar produtos" autocomplete="off">
                 <button type="button" id="botaoLimparPesquisa" class="pesquisa__limpar" hidden
-                        aria-label="Limpar pesquisa">&times;</button>
+                        aria-label="Limpar pesquisa" title="Limpar pesquisa">&times;</button>
                 <button type="button" id="botaoPesquisar" class="botao botao--primario pesquisa__botao">
                     Pesquisar
                 </button>
@@ -42,6 +42,7 @@
                     <nav id="menuPerfil" class="menu-perfil" hidden aria-label="Menu da conta">
                         <a id="linkMeusPedidos" href="#" class="menu-perfil__item">Meus pedidos</a>
                         <a id="linkDadosConta" href="#" class="menu-perfil__item">Dados da conta</a>
+                        <button type="button" id="botaoTrocarGerente" class="menu-perfil__item" hidden>Acessar gerenciamento</button>
                         <button type="button" id="botaoSair" class="menu-perfil__item">Sair da conta</button>
                     </nav>
                 </div>
@@ -92,7 +93,7 @@
     </main>
 
     <footer class="rodape">
-        <p>Mercado V.2 &mdash; projeto acadêmico</p>
+        <p>Mercado V.2</p>
     </footer>
 
     <!-- Mensagem discreta (toast) -->
@@ -114,7 +115,10 @@
                 Continuar comprando
             </button>
         </div>
-
+            <label class="selecionar-todos" id="labelSelecionarTodosCarrinho">
+            <input type="checkbox" id="selecionarTodosCarrinho">
+            <span>Selecionar todos os produtos</span>
+        </label>
         <ul id="listaCarrinho" class="lista-carrinho"></ul>
 
         <div id="rodapeCarrinho" class="painel-carrinho__rodape" hidden>

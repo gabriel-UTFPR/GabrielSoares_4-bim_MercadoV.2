@@ -1,0 +1,57 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --azul-escuro: #0b3d91; --azul: #1a62d6; --azul-hover: #144fb0; --fundo: #f4f7fb; --branco: #fff; --texto: #1f2937; --suave: #6b7280; --borda: #dbe3ef; --verde: #067647; --vermelho: #b42318; }
+body { min-height: 100vh; display: flex; flex-direction: column; font-family: "Segoe UI", Arial, sans-serif; color: var(--texto); background: var(--fundo); line-height: 1.45; }
+header { position: relative; padding: 2rem 1rem; background: #1976d2; color: #fff; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,.1); }
+header h1 { margin-bottom: .4rem; font-size: 2rem; }
+header p { opacity: .9; }
+header .logo-mercado { position: absolute; left: 40px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 4px; padding: 8px 10px; border-radius: 8px; background: #fff; text-decoration: none; white-space: nowrap; font-size: 1.5rem; font-weight: 800; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+.logo-mercado__marca { color: #0b3d91; }
+.logo-mercado__versao { padding: 0 6px; border-radius: 6px; background: #1a62d6; color: #fff; font-size: 1.1rem; }
+.pagina-pedidos { width: min(1200px, calc(100% - 32px)); margin: 28px auto; flex: 1; display: grid; gap: 22px; align-content: start; }
+.painel-listagem, .painel-edicao { padding: 24px; background: var(--branco); border: 1px solid var(--borda); border-radius: 12px; box-shadow: 0 2px 8px rgba(11,61,145,.07); }
+.titulo-secao { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.titulo-secao h2 { color: var(--azul-escuro); margin-bottom: 3px; }
+.titulo-secao p { color: var(--suave); font-size: .94rem; }
+.filtros { display: grid; grid-template-columns: minmax(220px, 2fr) minmax(190px, 1fr); gap: 8px 14px; margin-bottom: 16px; align-items: center; }
+.filtros label { font-size: .88rem; font-weight: 700; color: #374151; }
+input, select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 7px; color: var(--texto); background: #fff; font: inherit; }
+input:focus, select:focus { outline: 2px solid #93c5fd; border-color: var(--azul); }
+.tabela-responsiva { width: 100%; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 700px; }
+th, td { padding: 12px 10px; border-bottom: 1px solid #e5eaf1; text-align: left; font-size: .92rem; }
+th { background: #f3f7fd; color: #1e3a5f; }
+tbody tr:hover { background: #f8fbff; }
+.estado-tabela { text-align: center; color: var(--suave); padding: 24px; }
+.botao { min-height: 40px; padding: 9px 14px; border: 0; border-radius: 7px; cursor: pointer; font: inherit; font-weight: 700; }
+.botao:disabled { opacity: .6; cursor: not-allowed; }
+.botao-primario { background: var(--azul); color: #fff; }
+.botao-primario:hover { background: var(--azul-hover); }
+.botao-secundario { background: #e8f0fd; color: var(--azul-escuro); }
+.botao-secundario:hover { background: #d8e6fb; }
+.botao-abrir { padding: 7px 11px; border: 0; border-radius: 6px; background: #e8f0fd; color: var(--azul-escuro); font-weight: 700; cursor: pointer; }
+.status { display: inline-block; padding: 5px 10px; border-radius: 999px; background: #eef2f7; color: #334155; font-size: .8rem; font-weight: 700; white-space: nowrap; }
+.status--pago, .status--finalizado { background: #dcfce7; color: #166534; }
+.status--cancelado { background: #fee2e2; color: #991b1b; }
+.status--aguardando_pagamento { background: #fef3c7; color: #92400e; }
+.status--carrinho { background: #e0f2fe; color: #075985; }
+.resumo-cliente { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 14px; margin-bottom: 20px; background: #f6f9fe; border-radius: 8px; }
+.resumo-cliente div { display: grid; gap: 3px; }
+.resumo-cliente span { color: var(--suave); font-size: .82rem; }
+.resumo-cliente strong { overflow-wrap: anywhere; }
+.campos-edicao { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.campo { display: grid; gap: 7px; }
+.campo label { font-weight: 700; font-size: .9rem; }
+.resumo-valores { display: grid; gap: 10px; max-width: 430px; margin: 20px 0 24px auto; }
+.resumo-valores div { display: flex; justify-content: space-between; gap: 16px; padding-bottom: 8px; border-bottom: 1px solid #e5eaf1; }
+.resumo-valores .total { color: var(--azul-escuro); font-size: 1.12rem; border-bottom: 0; }
+.bloco-detalhes { margin-top: 20px; }
+.bloco-detalhes h3 { margin-bottom: 10px; color: var(--azul-escuro); }
+.bloco-detalhes p { color: #4b5563; }
+.tabela-itens { min-width: 550px; }
+.aviso-operacao { margin-top: 22px; padding: 13px 15px; border-left: 4px solid #d97706; border-radius: 6px; background: #fffbeb; color: #78350f; font-size: .9rem; }
+.acoes-formulario { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.mensagem { margin-top: 12px; padding: 10px 12px; border-radius: 7px; background: #eff6ff; color: #1e40af; }
+.mensagem.erro { background: #fef2f2; color: #991b1b; }
+.mensagem.sucesso { background: #ecfdf5; color: #166534; }
+footer { margin-top: auto; padding: 18px; text-align: center; color: #fff; background: #1976d2; font-size: .9rem; }
+@media (max-width: 760px) { header { padding-top: 78px; } header .logo-mercado { left: 12px; top: 12px; transform: none; font-size: 1.15rem; padding: 6px 8px; } .logo-mercado__versao { font-size: .9rem; } .titulo-secao { align-items: flex-start; flex-direction: column; } .filtros { grid-template-columns: 1fr; } .campos-edicao { grid-template-columns: 1fr; } .resumo-cliente { grid-template-columns: 1fr; } .painel-listagem, .painel-edicao { padding: 16px; } }

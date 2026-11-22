@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar senha - Mercado V.2</title>
+    <link rel="stylesheet" href="recuperacao.css">
+</head>
+<body>
+
+    <main class="container-recuperacao">
+        <a href="../login/login.html" class="voltar-login">
+            ← Voltar para o login
+        </a>
+
+        <section class="card-recuperacao">
+            <h1>Recuperar senha</h1>
+            <p class="subtitulo" id="subtituloRecuperacao">
+                Informe seu e-mail para receber um código de verificação.
+            </p>
+
+            <!-- ETAPA 1: SOLICITAR CÓDIGO -->
+            <form id="formSolicitar">
+                <div class="campo">
+                    <label for="emailRecuperacao">E-mail cadastrado</label>
+                    <input
+                        type="email"
+                        id="emailRecuperacao"
+                        name="email"
+                        placeholder="Digite seu e-mail"
+                        maxlength="100"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+                <button type="submit" class="botao-principal">Enviar código</button>
+            </form>
+
+            <!-- ETAPA 2: VALIDAR CÓDIGO -->
+            <form id="formValidar" hidden>
+                <p class="orientacao-etapa">
+                    Informe o código de 6 dígitos enviado ao seu e-mail.
+                </p>
+                <div class="campo">
+                    <label for="codigoRecuperacao">Código de verificação</label>
+                    <input
+                        type="text"
+                        id="codigoRecuperacao"
+                        name="codigo"
+                        placeholder="Digite o código recebido"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        maxlength="6"
+                        pattern="[0-9]{6}"
+                        required
+                    >
+                </div>
+                <button type="submit" class="botao-principal">Verificar código</button>
+            </form>
+
+            <!-- ETAPA 3: CADASTRAR NOVA SENHA -->
+            <form id="formRedefinir" hidden>
+                <p class="orientacao-etapa">
+                    Código confirmado. Cadastre sua nova senha.
+                </p>
+                <div class="campo">
+                    <label for="novaSenha">Nova senha</label>
+                    <div class="campo-senha">
+                        <input
+                            type="password"
+                            id="novaSenha"
+                            name="senha"
+                            placeholder="Digite a nova senha"
+                            minlength="8"
+                            maxlength="72"
+                            autocomplete="new-password"
+                            required
+                        >
+                        <button type="button" id="mostrarNovaSenha" aria-label="Mostrar nova senha">
+                            Mostrar
+                        </button>
+                    </div>
+                </div>
+                <div class="campo">
+                    <label for="confirmarNovaSenha">Confirmar nova senha</label>
+                    <div class="campo-senha">
+                        <input
+                            type="password"
+                            id="confirmarNovaSenha"
+                            name="confirmarSenha"
+                            placeholder="Digite novamente sua senha"
+                            minlength="8"
+                            maxlength="72"
+                            autocomplete="new-password"
+                            required
+                        >
+                        <button type="button" id="mostrarConfirmarSenha" aria-label="Mostrar confirmação da senha">
+                            Mostrar
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="botao-principal">Alterar senha</button>
+            </form>
+
+            <p id="mensagemRecuperacao" class="mensagem" role="status" aria-live="polite"></p>
+
+            <div id="areaVoltarLogin" hidden>
+                <a href="../login/login.html" class="botao-voltar-login">
+                    Voltar para o login
+                </a>
+            </div>
+
+            <div class="separador" id="separadorTextoLogin"></div>
+            <p class="texto-login" id="textoLoginRecuperacao">
+                Lembrou sua senha?
+                <a href="../login/login.html">Voltar para entrar</a>
+            </p>
+        </section>
+    </main>
+
+    <script src="recuperacao.js"></script>
+</body>
+</html>

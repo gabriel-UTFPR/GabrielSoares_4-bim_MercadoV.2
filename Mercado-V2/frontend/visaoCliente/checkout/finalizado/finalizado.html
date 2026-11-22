@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido finalizado - Mercado V.2</title>
+    <link rel="stylesheet" href="finalizado.css">
+    <script src="finalizado.js" defer></script>
+</head>
+<body>
+    <header class="cabecalho">
+        <div class="cabecalho__conteudo">
+            <a href="../../loja/loja.html" class="logo">Mercado <span>V.2</span></a>
+        </div>
+    </header>
+    <main class="principal">
+        <nav class="etapas" aria-label="Etapas da compra">
+            <div class="etapa etapa--concluida"><span class="etapa__numero">✓</span><span>Revisão</span></div>
+            <div class="etapa etapa--concluida"><span class="etapa__numero">✓</span><span>Endereço</span></div>
+            <div class="etapa etapa--concluida"><span class="etapa__numero">✓</span><span>Pagamento</span></div>
+            <div class="etapa etapa--ativa"><span class="etapa__numero">4</span><span>Finalizado</span></div>
+        </nav>
+        <section class="confirmacao" id="confirmacaoPedido" hidden>
+            <div class="icone-sucesso" aria-hidden="true">✓</div>
+            <h1>Pedido finalizado!</h1>
+            <p class="descricao">Sua compra foi registrada com sucesso.</p>
+            <div class="numero-pedido">Pedido <strong id="numeroPedido"></strong></div>
+            <p class="status">Status: <strong id="statusPedido"></strong></p>
+            <div class="resumo">
+                <h2>Resumo da compra</h2>
+                <div class="linha"><span>Subtotal</span><strong id="subtotal"></strong></div>
+                <div class="linha"><span>Frete</span><strong id="frete"></strong></div>
+                <div class="linha linha--total"><span>Total</span><strong id="total"></strong></div>
+                <div class="linha linha--pagamento"><span>Forma de pagamento</span><strong id="formaPagamento"></strong></div>
+            </div>
+            <p class="observacao">Este projeto utiliza uma confirmação de pagamento simulada. Nenhuma transação financeira real foi realizada.</p>
+            <a class="botao" href="../../loja/loja.html">Voltar para a loja</a>
+        </section>
+        <section class="aviso" id="avisoPedido" hidden>
+            <h1>Não encontramos os dados desta confirmação.</h1>
+            <p>Para sua segurança, esta página mostra os dados de uma compra finalizada nesta sessão.</p>
+            <a class="botao" href="../../loja/loja.html">Ir para a loja</a>
+        </section>
+    </main>
+</body>
+</html>

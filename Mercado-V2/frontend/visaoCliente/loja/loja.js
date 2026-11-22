@@ -17,7 +17,7 @@
    ===================================================== */
 const CONFIG = {
     // Endereço do backend (o mesmo usado nas telas do gerente)
-    URL_API: 'http://localhost:3001',
+    URL_API: 'http://127.0.0.1:3001',
 
     // ---- AUTENTICAÇÃO ----
     // O backend atual NÃO possui rota de sessão nem de logout.
@@ -26,19 +26,19 @@ const CONFIG = {
     // Formato esperado da resposta de ROTA_SESSAO:
     //   { sucesso: true, usuario: { nome_pessoa: '...', tipo: 'cliente' | 'gerente',
     //                               cadastro_completo: true | false } }
-    ROTA_SESSAO: null,
-    ROTA_LOGOUT: null,
+    ROTA_SESSAO: '/auth/minha-sessao',
+    ROTA_LOGOUT: '/auth/logout',
 
     // ---- PÁGINAS (caminhos relativos a frontend/visaoCliente/) ----
-    PAGINA_MENU_GERENTE: '../visaoGerente/menu/menu.html',   // existe
-    PAGINA_LOGIN: '../login/login.html',                     // ainda não existe
-    PAGINA_MEUS_PEDIDOS: 'pedidos.html',                     // ainda não existe
-    PAGINA_DADOS_CONTA: 'conta.html',                        // ainda não existe
-    PAGINA_FINALIZAR: 'finalizar.html',                      // ainda não existe
+    PAGINA_MENU_GERENTE: '../../visaoGerente/menu/menu.html',
+    PAGINA_LOGIN: '../../login/login.html',                   // ainda não existe
+    PAGINA_MEUS_PEDIDOS: '../meusPedidos/pedidos.html',
+    PAGINA_DADOS_CONTA: '../minhaConta/conta.html',
+    PAGINA_FINALIZAR: '../checkout/revisao/revisao.html',                     // ainda não existe
 
     // ---- CARRINHO ----
     CHAVE_CARRINHO: 'mercadoV2_carrinho',
-
+    CHAVE_SELECIONADOS: 'mercadoV2_selecionados',
     // ---- CARROSSEL ----
     CARROSSEL_MAXIMO_PRODUTOS: 8,
     CARROSSEL_INTERVALO_MS: 5000,
@@ -54,8 +54,9 @@ const estado = {
     unidades: {},            // { 'KG': 'Quilograma', ... }
     idsCarrossel: new Set(), // ids dos produtos que estão no carrossel
     termoPesquisa: '',       // pesquisa aplicada no momento
-    carrinho: [],            // itens do carrinho
-    sessao: { tipo: 'visitante', nome: '', cadastroCompleto: false },
+    carrinho: [],  
+    selecionados: new Set(), // IDs dos produtos selecionados para compra          // itens do carrinho
+    sessao: { tipo: 'visitante', nome: '', cadastroCompleto: false, ehGerente: false },
     carrossel: { posicao: 0, total: 0, timer: null }
 };
 
@@ -63,7 +64,7 @@ const estado = {
    2) UTILITÁRIOS
    ===================================================== */
 const $ = (id) => document.getElementById(id);
-
+const selecionarTodosCarrinho = $('selecionarTodosCarrinho');
 const formatadorMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const formatarMoeda = (valor) => formatadorMoeda.format(valor);
 
@@ -181,25 +182,59 @@ function criarImagem(idProduto, descricao, classe) {
    4) SESSÃO DO USUÁRIO
    ===================================================== */
 async function carregarSessao() {
-    if (!CONFIG.ROTA_SESSAO) return; // backend ainda sem autenticação: visitante
+    if (!CONFIG.ROTA_SESSAO) return;
 
     try {
-        // credentials: 'include' envia o cookie de sessão do backend.
-        const dados = await buscarJson(CONFIG.ROTA_SESSAO, { credentials: 'include' });
-        const usuario = dados.usuario;
-        if (!usuario) return;
+        const dados = await buscarJson(CONFIG.ROTA_SESSAO, {
+            credentials: 'include'
+        });
 
-        estado.sessao = {
-            tipo: usuario.tipo === 'gerente' ? 'gerente' : 'cliente',
-            nome: String(usuario.nome_pessoa ?? ''),
-            cadastroCompleto: usuario.cadastro_completo === true
-        };
+        const sessao = dados.sessao;
+
+        if (!sessao) {
+            estado.sessao = {
+                tipo: 'visitante',
+                nome: '',
+                cadastroCompleto: false,
+                ehGerente: false
+            };
+            return;
+        }
+
+        const tipoAcesso = String(sessao.tipo_acesso || '').toUpperCase();
+
+        if (tipoAcesso === 'GERENTE') {
+            estado.sessao = {
+                tipo: 'gerente',
+                nome: String(sessao.nome_pessoa || ''),
+                cadastroCompleto: false,
+                ehGerente: true
+            };
+        } else if (tipoAcesso === 'CLIENTE') {
+            estado.sessao = {
+                tipo: 'cliente',
+                nome: String(sessao.nome_pessoa || ''),
+                cadastroCompleto: true,
+                ehGerente: sessao.eh_gerente === true
+            };
+        } else {
+            estado.sessao = {
+                tipo: 'visitante',
+                nome: '',
+                cadastroCompleto: false,
+                ehGerente: false
+            };
+        }
+
     } catch (erro) {
-        // Sem sessão válida (ou servidor fora do ar): segue como visitante
-        estado.sessao = { tipo: 'visitante', nome: '', cadastroCompleto: false };
+        estado.sessao = {
+            tipo: 'visitante',
+            nome: '',
+            cadastroCompleto: false,
+            ehGerente: false
+        };
     }
 
-    // O gerente não fica na loja
     if (estado.sessao.tipo === 'gerente') {
         window.location.replace(CONFIG.PAGINA_MENU_GERENTE);
     }
@@ -463,12 +498,17 @@ function renderizarGrade() {
     grade.replaceChildren();
 
     const termo = normalizarTexto(estado.termoPesquisa);
+    $('secaoCarrossel').hidden = Boolean(termo) || estado.carrossel.total === 0;
     const correspondentes = termo
         ? estado.produtos.filter((p) => normalizarTexto(p.descricao).includes(termo))
         : estado.produtos;
 
     // Regra fundamental: produtos do carrossel NÃO aparecem na grade
-    const naGrade = correspondentes.filter((p) => !estado.idsCarrossel.has(p.id_produto));
+    // Durante a pesquisa, todos os produtos correspondentes aparecem na grade.
+    const naGrade = termo
+        ? correspondentes
+        : correspondentes.filter((p) => !estado.idsCarrossel.has(p.id_produto));
+
     const noCarrossel = correspondentes.length - naGrade.length;
 
     naGrade.forEach((produto) => {
@@ -505,10 +545,11 @@ function executarPesquisa() {
 function limparPesquisa() {
     $('campoPesquisa').value = '';
     $('botaoLimparPesquisa').hidden = true;
-    if (estado.termoPesquisa !== '') {
-        estado.termoPesquisa = '';
-        renderizarGrade();
-    }
+
+    estado.termoPesquisa = '';
+
+    renderizarGrade();
+
     $('campoPesquisa').focus();
 }
 
@@ -531,6 +572,33 @@ function lerCarrinhoSalvo() {
             }));
     } catch (erro) {
         return [];
+    }
+}
+
+function lerSelecionadosSalvos() {
+    try {
+        const lista = JSON.parse(
+            localStorage.getItem(CONFIG.CHAVE_SELECIONADOS) || '[]'
+        );
+
+        if (!Array.isArray(lista)) return new Set();
+
+        return new Set(
+            lista.map(Number).filter(Number.isFinite)
+        );
+    } catch (erro) {
+        return new Set();
+    }
+}
+
+function salvarSelecionados() {
+    try {
+        localStorage.setItem(
+            CONFIG.CHAVE_SELECIONADOS,
+            JSON.stringify([...estado.selecionados])
+        );
+    } catch (erro) {
+        mostrarMensagem('Não foi possível salvar os produtos selecionados.', true);
     }
 }
 
@@ -601,7 +669,10 @@ async function adicionarAoCarrinho(produto, quantidade) {
         });
     }
 
+       estado.selecionados.add(atual.id_produto);
+
     salvarCarrinho();
+    salvarSelecionados();
     renderizarCarrinho();
     mostrarMensagem('Produto adicionado ao carrinho!');
     return true;
@@ -635,7 +706,10 @@ async function alterarQuantidadeNoCarrinho(idProduto, direcao) {
 
 function removerDoCarrinho(idProduto) {
     estado.carrinho = estado.carrinho.filter((i) => i.id_produto !== idProduto);
+    estado.selecionados.delete(idProduto);
+
     salvarCarrinho();
+    salvarSelecionados();
     renderizarCarrinho();
 }
 
@@ -677,57 +751,145 @@ function calcularSubtotal(item) {
     return Math.round(item.preco * item.quantidade * 100) / 100;
 }
 
+
+
 function criarItemCarrinho(item) {
     const regras = regrasQuantidade(item);
     const sigla = item.id_unidade_medida;
 
+    // Caixa para selecionar ou desmarcar o produto
+    const selecao = criarElemento('input', {
+        classe: 'item-carrinho__selecao',
+        atributos: {
+            type: 'checkbox',
+            'data-acao': 'selecionar',
+            'data-id': item.id_produto,
+            'aria-label': `Selecionar ${item.descricao}`
+        }
+    });
+
+    selecao.checked = estado.selecionados.has(item.id_produto);
+
+    const rotuloSelecao = criarElemento('label', {
+        classe: 'item-carrinho__rotulo'
+    }, [
+        selecao,
+        document.createTextNode(' Selecionar')
+    ]);
+
     const botaoMenos = criarElemento('button', {
         classe: 'quantidade__botao', texto: '−',
-        atributos: { type: 'button', 'data-acao': 'diminuir', 'data-id': item.id_produto, 'aria-label': 'Diminuir quantidade' }
+        atributos: {
+            type: 'button',
+            'data-acao': 'diminuir',
+            'data-id': item.id_produto,
+            'aria-label': 'Diminuir quantidade'
+        }
     });
+
     const botaoMais = criarElemento('button', {
         classe: 'quantidade__botao', texto: '+',
-        atributos: { type: 'button', 'data-acao': 'aumentar', 'data-id': item.id_produto, 'aria-label': 'Aumentar quantidade' }
+        atributos: {
+            type: 'button',
+            'data-acao': 'aumentar',
+            'data-id': item.id_produto,
+            'aria-label': 'Aumentar quantidade'
+        }
     });
+
     const valor = criarElemento('span', {
         classe: 'quantidade__unidade',
         texto: `${formatarQuantidade(item.quantidade, regras.decimal)} ${sigla}`
     });
-    const controle = criarElemento('div', { classe: 'quantidade' }, [botaoMenos, valor, botaoMais]);
+
+    const controle = criarElemento('div', {
+        classe: 'quantidade'
+    }, [botaoMenos, valor, botaoMais]);
 
     const botaoRemover = criarElemento('button', {
-        classe: 'item-carrinho__remover', texto: 'Remover',
-        atributos: { type: 'button', 'data-acao': 'remover', 'data-id': item.id_produto }
+        classe: 'item-carrinho__remover',
+        texto: 'Remover',
+        atributos: {
+            type: 'button',
+            'data-acao': 'remover',
+            'data-id': item.id_produto
+        }
     });
 
     const detalhes = criarElemento('div', {}, [
-        criarElemento('p', { classe: 'item-carrinho__nome', texto: item.descricao }),
-        criarElemento('p', { classe: 'item-carrinho__preco', texto: `${formatarMoeda(item.preco)} / ${sigla}` }),
-        criarElemento('div', { classe: 'item-carrinho__linha' }, [controle, botaoRemover]),
-        criarElemento('p', { classe: 'item-carrinho__subtotal', texto: `Subtotal: ${formatarMoeda(calcularSubtotal(item))}` })
+        rotuloSelecao,
+        criarElemento('p', {
+            classe: 'item-carrinho__nome',
+            texto: item.descricao
+        }),
+        criarElemento('p', {
+            classe: 'item-carrinho__preco',
+            texto: `${formatarMoeda(item.preco)} / ${sigla}`
+        }),
+        criarElemento('div', {
+            classe: 'item-carrinho__linha'
+        }, [controle, botaoRemover]),
+        criarElemento('p', {
+            classe: 'item-carrinho__subtotal',
+            texto: `Subtotal: ${formatarMoeda(calcularSubtotal(item))}`
+        })
     ]);
 
-    return criarElemento('li', { classe: 'item-carrinho' }, [
+    return criarElemento('li', {
+        classe: 'item-carrinho'
+    }, [
         criarImagem(item.id_produto, item.descricao, 'item-carrinho__imagem'),
         detalhes
     ]);
 }
 
+
+
+
 function renderizarCarrinho() {
     const lista = $('listaCarrinho');
     lista.replaceChildren();
-    estado.carrinho.forEach((item) => lista.appendChild(criarItemCarrinho(item)));
+
+    estado.carrinho.forEach((item) => {
+        lista.appendChild(criarItemCarrinho(item));
+    });
 
     const vazio = estado.carrinho.length === 0;
+
     $('carrinhoVazio').hidden = !vazio;
     $('rodapeCarrinho').hidden = vazio;
 
-    const total = estado.carrinho.reduce((soma, item) => soma + calcularSubtotal(item), 0);
-    $('totalCarrinho').textContent = formatarMoeda(Math.round(total * 100) / 100);
+    // Calcula somente os produtos selecionados.
+    const selecionados = estado.carrinho.filter((item) =>
+        estado.selecionados.has(item.id_produto)
+    );
 
-    // O contador mostra quantos produtos diferentes estão no carrinho
+    const total = selecionados.reduce(
+        (soma, item) => soma + calcularSubtotal(item),
+        0
+    );
+
+    $('totalCarrinho').textContent = formatarMoeda(
+        Math.round(total * 100) / 100
+    );
+
+    // O contador continua mostrando todos os produtos do carrinho.
     $('contadorCarrinho').textContent = String(estado.carrinho.length);
+    // Atualiza a visibilidade e o estado do checkbox "Selecionar todos"
+const labelSelecionarTodos = $('labelSelecionarTodosCarrinho');
+
+labelSelecionarTodos.hidden = estado.carrinho.length === 0;
+
+selecionarTodosCarrinho.checked =
+    estado.carrinho.length > 0 &&
+    estado.selecionados.size === estado.carrinho.length;
+    // Atualiza o checkbox "Selecionar todos"
+    selecionarTodosCarrinho.checked =
+    estado.carrinho.length > 0 &&
+    estado.selecionados.size === estado.carrinho.length;
 }
+
+
 
 let elementoAntesDoCarrinho = null;
 function abrirCarrinho() {
@@ -750,7 +912,10 @@ function fecharCarrinho() {
 const carrinhoEstaAberto = () => $('painelCarrinho').classList.contains('painel-carrinho--aberto');
 
 function finalizarCompra() {
-    if (estado.carrinho.length === 0) return;
+    if (estado.selecionados.size === 0) {
+    mostrarMensagem('Selecione pelo menos um produto para continuar.', true);
+    return;
+}
     if (!estaConectado()) {
         mostrarMensagem('Faça login para finalizar a compra. Seu carrinho será mantido.');
         window.location.href = CONFIG.PAGINA_LOGIN;
@@ -776,6 +941,9 @@ function atualizarPerfil() {
 
     $('linkMeusPedidos').href = CONFIG.PAGINA_MEUS_PEDIDOS;
     $('linkDadosConta').href = CONFIG.PAGINA_DADOS_CONTA;
+    $('botaoTrocarGerente').hidden = !(
+        estaConectado() && estado.sessao.ehGerente
+    );
 
     atualizarAvisoCadastro();
 }
@@ -797,6 +965,32 @@ function alternarMenuPerfil(abrir) {
     $('botaoPerfil').setAttribute('aria-expanded', String(mostrar));
 }
 
+async function trocarParaGerente() {
+    const botao = $('botaoTrocarGerente');
+    botao.disabled = true;
+    botao.textContent = 'Alterando acesso...';
+
+    try {
+        const resultado = await buscarJson('/auth/trocar-acesso', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ tipoAcesso: 'GERENTE' })
+        });
+
+        if (resultado.proximaEtapa !== 'ENTRAR_GERENCIAMENTO') {
+            throw new Error('O servidor não confirmou a troca para gerente.');
+        }
+
+        window.location.href = '../../visaoGerente/menu/menu.html';
+    } catch (erro) {
+        console.error('Erro ao trocar para gerente:', erro);
+        mostrarMensagem(erro.message || 'Não foi possível trocar para gerente.', true);
+        botao.disabled = false;
+        botao.textContent = 'Acessar gerenciamento';
+    }
+}
+
 async function sairDaConta() {
     if (!CONFIG.ROTA_LOGOUT) {
         mostrarMensagem('A rota de saída ainda não existe no backend.', true);
@@ -813,7 +1007,41 @@ async function sairDaConta() {
 function configurarEventos() {
     // Pesquisa: só executa ao clicar no botão
     $('botaoPesquisar').addEventListener('click', executarPesquisa);
-    $('botaoLimparPesquisa').addEventListener('click', limparPesquisa);
+   // Botão para limpar a pesquisa
+$('botaoLimparPesquisa').addEventListener('click', () => {
+    limparPesquisa();
+});
+
+// Selecionar ou desmarcar produtos no carrinho
+$('listaCarrinho').addEventListener('change', (e) => {
+    const checkbox = e.target.closest('input[data-acao="selecionar"]');
+
+    if (!checkbox) return;
+
+    const id = Number(checkbox.dataset.id);
+
+    if (checkbox.checked) {
+        estado.selecionados.add(id);
+    } else {
+        estado.selecionados.delete(id);
+    }
+
+    salvarSelecionados();
+    renderizarCarrinho();
+});
+
+selecionarTodosCarrinho.addEventListener('change', () => {
+    if (selecionarTodosCarrinho.checked) {
+        estado.selecionados = new Set(
+            estado.carrinho.map((item) => Number(item.id_produto))
+        );
+    } else {
+        estado.selecionados.clear();
+    }
+
+    salvarSelecionados();
+    renderizarCarrinho();
+});
     $('campoPesquisa').addEventListener('input', (e) => {
         $('botaoLimparPesquisa').hidden = e.target.value === '';
     });
@@ -857,6 +1085,7 @@ function configurarEventos() {
         }
     });
     $('botaoSair').addEventListener('click', sairDaConta);
+    $('botaoTrocarGerente').addEventListener('click', trocarParaGerente);
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.perfil')) alternarMenuPerfil(false);
     });
@@ -869,21 +1098,54 @@ function configurarEventos() {
     });
 
     // Se o carrinho mudar em outra aba, atualiza esta
-    window.addEventListener('storage', (e) => {
-        if (e.key === CONFIG.CHAVE_CARRINHO) {
-            estado.carrinho = lerCarrinhoSalvo();
-            renderizarCarrinho();
-        }
-    });
+   window.addEventListener('storage', (e) => {
+    if (e.key === CONFIG.CHAVE_CARRINHO) {
+        estado.carrinho = lerCarrinhoSalvo();
+
+        estado.selecionados = new Set(
+            [...estado.selecionados].filter(
+                (id) => estado.carrinho.some((item) => item.id_produto === id)
+            )
+        );
+
+        salvarSelecionados();
+        renderizarCarrinho();
+    }
+
+    if (e.key === CONFIG.CHAVE_SELECIONADOS) {
+        estado.selecionados = lerSelecionadosSalvos();
+        renderizarCarrinho();
+    }
+});
 }
 
 async function inicializar() {
     configurarEventos();
     estado.carrinho = lerCarrinhoSalvo();
-    renderizarCarrinho();                       // mostra o carrinho salvo imediatamente
+estado.selecionados = lerSelecionadosSalvos();
+
+// Na primeira utilização, todos os produtos ficam selecionados.
+// Na primeira utilização, todos os produtos ficam selecionados.
+if (localStorage.getItem(CONFIG.CHAVE_SELECIONADOS) === null) {
+    estado.selecionados = new Set(
+        estado.carrinho.map((item) => item.id_produto)
+    );
+    salvarSelecionados();
+}
+
+// Remove seleções de produtos que não estão mais no carrinho.
+estado.selecionados = new Set(
+    [...estado.selecionados].filter(
+        (id) => estado.carrinho.some((item) => item.id_produto === id)
+    )
+);
+
+salvarSelecionados();
+renderizarCarrinho();                    // mostra o carrinho salvo imediatamente
 
     await carregarSessao();                     // pode redirecionar o gerente
     atualizarPerfil();
+
     await carregarCatalogo();
 }
 

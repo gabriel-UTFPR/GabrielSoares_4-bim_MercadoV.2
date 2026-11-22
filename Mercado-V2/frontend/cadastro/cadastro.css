@@ -1,0 +1,269 @@
+/* CONFIGURAÇÕES GERAIS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f2f6fc;
+    color: #333;
+    min-height: 100vh;
+}
+
+/* CONTAINER */
+.container-cadastro {
+    width: 100%;
+    min-height: 100vh;
+    padding: 80px 20px 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* VOLTAR */
+.voltar-login {
+    position: absolute;
+    top: 30px;
+    left: 40px;
+    color: #1769aa;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.voltar-login:hover {
+    color: #0b477c;
+    text-decoration: underline;
+}
+
+/* CARTÃO */
+.card-cadastro {
+    background: #fff;
+    width: 100%;
+    max-width: 760px;
+    padding: 40px;
+    border-radius: 14px;
+    box-shadow: 0 5px 25px rgba(0, 50, 100, 0.10);
+}
+
+.card-cadastro h1 {
+    color: #155fa0;
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.subtitulo {
+    color: #777;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* FORMULÁRIO DE CADASTRO */
+#formCadastro,
+#formVerificacao {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.campo label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.campo input {
+    width: 100%;
+    height: 45px;
+    padding: 0 12px;
+    border: 1px solid #ccd6e2;
+    border-radius: 7px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.campo input:focus {
+    border-color: #1769aa;
+    box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.12);
+}
+
+/* BOTÕES */
+.botao-cadastrar {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 47px;
+    margin-top: 5px;
+    border: none;
+    border-radius: 7px;
+    background: #1769aa;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.botao-cadastrar:hover {
+    background: #0e518a;
+}
+
+.botao-cadastrar:active {
+    transform: scale(0.98);
+}
+
+.botao-cadastrar:disabled,
+.botao-secundario:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.botao-secundario,
+.botao-link {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 42px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.botao-secundario {
+    background: #fff;
+    color: #1769aa;
+    border: 1px solid #1769aa;
+}
+
+.botao-secundario:hover {
+    background: #f2f7fc;
+}
+
+.botao-link {
+    background: transparent;
+    border: none;
+    color: #1769aa;
+}
+
+.botao-link:hover {
+    text-decoration: underline;
+}
+
+/* ETAPA DE VERIFICAÇÃO */
+.etapa-verificacao {
+    width: 100%;
+}
+
+.etapa-verificacao h2 {
+    color: #155fa0;
+    text-align: center;
+    font-size: 21px;
+    margin-bottom: 12px;
+}
+
+.texto-verificacao {
+    max-width: 510px;
+    margin: 0 auto 24px;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.texto-verificacao strong {
+    color: #155fa0;
+}
+
+#formVerificacao {
+    grid-template-columns: 1fr;
+    max-width: 430px;
+    margin: 0 auto;
+}
+
+.campo-codigo input {
+    text-align: center;
+    font-size: 24px;
+    letter-spacing: 8px;
+    font-weight: bold;
+}
+
+/* MENSAGENS */
+.mensagem {
+    grid-column: 1 / -1;
+    min-height: 18px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.mensagem--erro {
+    color: #d32f2f;
+}
+
+.mensagem--sucesso {
+    color: #067647;
+}
+
+/* SEPARADOR */
+.separador {
+    height: 1px;
+    background: #e5eaf0;
+    margin: 25px 0 20px;
+}
+
+/* LOGIN */
+.texto-login {
+    text-align: center;
+    color: #666;
+    font-size: 13px;
+}
+
+.texto-login a {
+    color: #1769aa;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.texto-login a:hover {
+    text-decoration: underline;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 600px) {
+    .container-cadastro {
+        padding: 80px 15px 30px;
+    }
+
+    .voltar-login {
+        top: 25px;
+        left: 20px;
+    }
+
+    .card-cadastro {
+        padding: 30px 22px;
+    }
+
+    #formCadastro {
+        grid-template-columns: 1fr;
+    }
+
+    .card-cadastro h1 {
+        font-size: 25px;
+    }
+}

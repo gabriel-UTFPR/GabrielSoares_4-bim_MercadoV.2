@@ -26,32 +26,14 @@ body {
     min-height: 100vh;
 }
 
-/* --- Header Semântico --- */
+/* --- Cabeçalho --- */
 header {
+    position: relative;
     background-color: var(--cor-primaria);
     color: var(--cor-branco);
     padding: 2rem 1rem;
     text-align: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-header {
-    background-color: var(--cor-primaria);
-    color: var(--cor-branco);
-    padding: 2rem 1rem;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position:relative;
-}
-
-header img {
-    width: 80px;
-    height: 80px;
-    position:absolute;
-    left:40px;
-    top:50%;
-    transform:translateY(-50%);
-    border-radius: 10px;
 }
 
 header h1 {
@@ -59,12 +41,136 @@ header h1 {
     font-size: 2.2rem;
 }
 
-header p {
+header > p {
     font-size: 1rem;
     opacity: 0.8;
 }
 
-/* --- Main (Conteúdo Central) --- */
+/* --- Logo Mercado V.2: identidade visual da loja --- */
+.logo-mercado {
+    position: absolute;
+    left: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #0b3d91;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: 800;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.logo-mercado__marca {
+    color: #0b3d91;
+}
+
+.logo-mercado__versao {
+    padding: 0 6px;
+    border-radius: 6px;
+    background: #1a62d6;
+    color: #ffffff;
+    font-size: 1.1rem;
+}
+
+.logo-mercado:hover {
+    filter: brightness(0.96);
+    transform: translateY(-50%) scale(1.02);
+}
+
+/* --- Perfil: nome, alternância de acesso e logout --- */
+.perfil-menu {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    z-index: 20;
+}
+
+.perfil-menu__botao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 42px;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--cor-primaria);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 30px;
+}
+
+.perfil-menu__botao:hover {
+    background: #eaf3fc;
+}
+
+.perfil-menu__icone {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.perfil-menu__seta {
+    font-size: 0.8rem;
+}
+
+.perfil-menu__opcoes {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 220px;
+    overflow: hidden;
+    background: var(--cor-branco);
+    border: 1px solid var(--cor-borda);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+.perfil-menu__item {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border: 0;
+    background: transparent;
+    color: var(--cor-texto);
+    font: inherit;
+    font-size: 0.95rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.perfil-menu__item:hover {
+    background: #eaf3fc;
+}
+
+.perfil-menu__item--sair {
+    border-top: 1px solid #e5e7eb;
+    color: #b42318;
+}
+
+.perfil-menu__item:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+/* Garante que o atributo hidden prevaleça sobre display:flex/block. */
+[hidden] {
+    display: none !important;
+}
+
+/* --- Conteúdo Principal --- */
 main.container-master {
     flex: 1;
     width: 100%;
@@ -81,18 +187,18 @@ main.container-master {
 }
 
 .card-menu {
-    background-color: var(--cor-branco);
-    padding: 2.5rem 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    text-decoration: none;
-    color: var(--cor-texto);
-    text-align: center;
-    border: 2px solid transparent;
-    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 2.5rem 1.5rem;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background-color: var(--cor-branco);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    color: var(--cor-texto);
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
 .card-menu:hover {
@@ -102,28 +208,76 @@ main.container-master {
 }
 
 .card-icon {
-    font-size: 3rem;
     margin-bottom: 1rem;
+    font-size: 3rem;
 }
 
 .card-menu h2 {
-    font-size: 1.5rem;
-    color: var(--cor-primaria);
     margin-bottom: 0.5rem;
+    color: var(--cor-primaria);
+    font-size: 1.5rem;
 }
 
 .card-menu p {
-    font-size: 0.95rem;
     color: #666;
+    font-size: 0.95rem;
     line-height: 1.4;
 }
 
-/* --- Footer Semântico --- */
+/* --- Rodapé --- */
 footer {
+    margin-top: 2rem;
+    padding: 1.5rem 1rem;
     background-color: var(--cor-primaria);
     color: var(--cor-branco);
-    text-align: center;
-    padding: 1.5rem 1rem;
-    margin-top: 2rem;
     font-size: 0.9rem;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 5rem 1rem 1.5rem;
+    }
+
+    .logo-mercado {
+        left: 12px;
+        top: 12px;
+        transform: none;
+        font-size: 1.15rem;
+        padding: 6px 8px;
+    }
+
+    .logo-mercado__versao {
+        font-size: 0.9rem;
+    }
+
+    .logo-mercado:hover {
+        transform: scale(1.02);
+    }
+
+    .perfil-menu {
+        top: 12px;
+        right: 12px;
+    }
+
+    .perfil-menu__botao {
+        min-height: 38px;
+        padding: 0.45rem 0.6rem;
+        font-size: 0.88rem;
+    }
+
+    header h1 {
+        font-size: 1.65rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .logo-mercado {
+        font-size: 1rem;
+    }
+
+    .perfil-menu__botao {
+        gap: 0.3rem;
+        font-size: 0.78rem;
+    }
 }

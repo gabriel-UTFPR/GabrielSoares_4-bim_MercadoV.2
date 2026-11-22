@@ -113,7 +113,7 @@ img { max-width: 100%; display: block; }
 .pesquisa__campo {
     flex: 1;
     min-width: 0;
-    padding: 10px 36px 10px 14px;
+    padding: 10px 14px 10px 14px;
     border: 2px solid var(--azul);
     border-right: none;
     border-radius: 8px 0 0 8px;
@@ -121,6 +121,11 @@ img { max-width: 100%; display: block; }
     outline: none;
 }
 .pesquisa__campo:focus { background: var(--azul-claro); }
+/* Esconde o "x" nativo do Chrome/Edge/Safari (usamos o nosso botão ×) */
+.pesquisa__campo::-webkit-search-cancel-button,
+.pesquisa__campo::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+/* Padding à direita para o texto não ficar embaixo do × */
+.pesquisa__campo { padding-right: 36px; }
 .pesquisa__botao { border-radius: 0 8px 8px 0; padding: 12px 18px; }
 .pesquisa__limpar {
     position: absolute;
@@ -131,7 +136,10 @@ img { max-width: 100%; display: block; }
     color: var(--texto-suave);
     cursor: pointer;
     line-height: 1;
+    padding: 4px 8px;
 }
+.pesquisa__limpar:hover { color: var(--azul-escuro); }
+
 
 .acoes { display: flex; align-items: center; gap: 8px; }
 .acoes__botao {
@@ -428,6 +436,25 @@ img { max-width: 100%; display: block; }
     border-radius: 8px;
 }
 .item-carrinho__nome { font-size: 0.95rem; font-weight: 600; }
+
+.item-carrinho__rotulo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    color: var(--azul-escuro);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.item-carrinho__selecao {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--azul);
+    cursor: pointer;
+}
+
 .item-carrinho__preco { font-size: 0.85rem; color: var(--texto-suave); }
 .item-carrinho__linha {
     display: flex;
@@ -484,4 +511,56 @@ img { max-width: 100%; display: block; }
     :root { --colunas-carrossel: 1; }
     .grade { grid-template-columns: 1fr; }
     .principal { padding: 16px 12px 32px; }
+}
+
+/* =====================================================
+   SELECIONAR TODOS OS PRODUTOS DO CARRINHO
+   ===================================================== */
+
+.selecionar-todos {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 12px 15px;
+    margin-bottom: 12px;
+
+    background-color: #f5f9ff;
+    border: 1px solid #d6e4f5;
+    border-radius: 8px;
+
+    color: #1e3a5f;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+    user-select: none;
+}
+
+.selecionar-todos input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+
+    accent-color: #2563eb;
+    cursor: pointer;
+}
+
+.selecionar-todos span {
+    flex: 1;
+}
+
+/* Efeito ao passar o mouse */
+.selecionar-todos:hover {
+    background-color: #eaf3ff;
+    border-color: #93b9ee;
+}
+
+/* Quando estiver escondido, não ocupar espaço */
+.selecionar-todos[hidden] {
+    display: none !important;
+}
+/* Mantém o botão de troca de perfil oculto até o backend confirmar a permissão. */
+.menu-perfil__item[hidden] {
+    display: none;
 }

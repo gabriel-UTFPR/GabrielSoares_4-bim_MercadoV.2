@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha conta - Mercado V.2</title>
+    <link rel="stylesheet" href="conta.css">
+</head>
+<body>
+    <header class="cabecalho">
+        <div class="cabecalho__conteudo">
+            <a class="logo" href="../loja/loja.html" aria-label="Mercado V.2 - página inicial">
+                <span class="logo__marca">Mercado</span><span class="logo__versao">V.2</span>
+            </a>
+
+            <nav class="navegacao" aria-label="Navegação da conta">
+                <a href="../loja/loja.html">Voltar à loja</a>
+                <a href="../meusPedidos/pedidos.html">Meus pedidos</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="pagina">
+        <header class="titulo">
+            <span class="eyebrow">ÁREA DO CLIENTE</span>
+            <h1>Minha conta</h1>
+            <p>Confira e atualize seus dados cadastrais.</p>
+        </header>
+
+        <form id="formConta" class="form-conta" novalidate>
+            <div class="campo campo--cpf">
+                <label for="cpf">CPF</label>
+                <input id="cpf" name="cpf" type="text" readonly disabled>
+                <small>O CPF não pode ser alterado nesta tela.</small>
+            </div>
+
+            <div class="campo">
+                <label for="nome">Nome completo</label>
+                <input id="nome" name="nome_pessoa" type="text" required maxlength="100" autocomplete="name">
+            </div>
+
+            <div class="campo">
+                <label for="nascimento">Data de nascimento</label>
+                <input id="nascimento" name="data_nascimento_pessoa" type="date" required>
+            </div>
+
+            <div class="campo">
+                <label for="email">E-mail</label>
+                <input id="email" name="email_pessoa" type="email" required maxlength="100" autocomplete="email">
+            </div>
+
+            <div class="campo campo--completo">
+                <label for="endereco">Endereço cadastral</label>
+                <input id="endereco" name="endereco_pessoa" type="text" required maxlength="150" autocomplete="street-address">
+            </div>
+
+            <div id="mensagem" class="mensagem" role="status" aria-live="polite" hidden></div>
+
+            <div class="acoes-form">
+                <button type="reset" id="botaoDesfazer" class="botao botao--secundario">Desfazer alterações</button>
+                <button type="submit" id="botaoSalvar" class="botao botao--primario" disabled>Salvar dados</button>
+            </div>
+        </form>
+    </main>
+
+    <footer class="rodape">
+        <p>Mercado V.2 </p>
+    </footer>
+
+    <script src="conta.js"></script>
+</body>
+</html>
