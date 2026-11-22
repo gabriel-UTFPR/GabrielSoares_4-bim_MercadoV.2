@@ -4,6 +4,8 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- ATENÇÃO: este script recria o banco de demonstração e apaga as tabelas listadas abaixo.
 -- Não execute em um banco com dados importantes sem fazer backup.
 DROP TABLE IF EXISTS
+    public.codigo_verificacao,
+    public.sessao,
     public.recuperacao_senha,
     public.item_pedido,
     public.pedido,
@@ -150,6 +152,72 @@ CREATE TABLE public.recuperacao_senha (
     CONSTRAINT recuperacao_senha_expiracao_ck
         CHECK (data_expiracao > data_criacao)
 );
+
+-- Sessões autenticadas: o token original fica somente no cookie HttpOnly.
+-- No banco é armazenado apenas seu hash SHA-256 (64 caracteres hexadecimais).
+CREATE TABLE public.sessao (
+    id_sessao SERIAL PRIMARY KEY,
+    cpf_pessoa VARCHAR(14) NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    tipo_acesso VARCHAR(15) NOT NULL
+        CHECK (tipo_acesso IN ('CLIENTE', 'GERENTE', 'FUNCIONARIO')),
+    data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_expiracao TIMESTAMP NOT NULL,
+    data_revogacao TIMESTAMP,
+
+    CONSTRAINT sessao_pessoa_fk
+        FOREIGN KEY (cpf_pessoa)
+        REFERENCES public.pessoa(cpf_pessoa)
+        ON DELETE CASCADE,
+
+    CONSTRAINT sessao_expiracao_ck
+        CHECK (data_expiracao > data_criacao),
+
+    CONSTRAINT sessao_revogacao_ck
+        CHECK (data_revogacao IS NULL OR data_revogacao >= data_criacao)
+);
+
+-- Códigos temporários para confirmação de login e recuperação de senha.
+-- codigo_hash deve ser gerado no backend com HMAC/segredo da aplicação,
+-- pois um código numérico curto não deve ser protegido apenas com SHA-256.
+CREATE TABLE public.codigo_verificacao (
+    id_codigo SERIAL PRIMARY KEY,
+    cpf_pessoa VARCHAR(14) NOT NULL,
+    codigo_hash VARCHAR(255) NOT NULL,
+    finalidade VARCHAR(20) NOT NULL
+        CHECK (finalidade IN ('LOGIN', 'RECUPERACAO')),
+    tentativas INTEGER NOT NULL DEFAULT 0
+        CHECK (tentativas >= 0),
+    limite_tentativas INTEGER NOT NULL DEFAULT 5
+        CHECK (limite_tentativas > 0),
+    data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_expiracao TIMESTAMP NOT NULL,
+    data_utilizacao TIMESTAMP,
+    data_invalidacao TIMESTAMP,
+
+    CONSTRAINT codigo_verificacao_pessoa_fk
+        FOREIGN KEY (cpf_pessoa)
+        REFERENCES public.pessoa(cpf_pessoa)
+        ON DELETE CASCADE,
+
+    CONSTRAINT codigo_verificacao_expiracao_ck
+        CHECK (data_expiracao > data_criacao),
+
+    CONSTRAINT codigo_verificacao_utilizacao_ck
+        CHECK (data_utilizacao IS NULL OR data_utilizacao >= data_criacao),
+
+    CONSTRAINT codigo_verificacao_invalidacao_ck
+        CHECK (data_invalidacao IS NULL OR data_invalidacao >= data_criacao)
+);
+
+CREATE INDEX sessao_cpf_idx
+    ON public.sessao(cpf_pessoa);
+CREATE INDEX sessao_expiracao_idx
+    ON public.sessao(data_expiracao);
+CREATE INDEX codigo_verificacao_cpf_finalidade_idx
+    ON public.codigo_verificacao(cpf_pessoa, finalidade);
+CREATE INDEX codigo_verificacao_expiracao_idx
+    ON public.codigo_verificacao(data_expiracao);
 
 CREATE INDEX pedido_cliente_idx ON public.pedido(cliente_cpf);
 CREATE INDEX pedido_data_idx ON public.pedido(data_pedido);
@@ -325,8 +393,8 @@ EXECUTE FUNCTION public.devolver_estoque_ao_cancelar_pedido();
 INSERT INTO public.pessoa
 (cpf_pessoa, nome_pessoa, data_nascimento_pessoa, endereco_pessoa, email_pessoa, senha_hash)
 VALUES
-('11111111101', 'Gabriel Silva', '2008-03-15', 'Rua das Flores, 100', 'gabriel@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
-('22222222202', 'João Oliveira', '2007-07-22', 'Rua Paraná, 200', 'joao@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
+('11111111101', 'Gabriel Soares', '2010-05-06', 'Rua do Bicudo, 42', 'gabriel.2010@alunos.utfpr.edu.br', crypt('Mercado123!', gen_salt('bf', 10))),
+('32876319268', 'João Oliveira', '2007-07-22', 'Rua Paraná, 200', 'joao@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
 ('33333333303', 'Maria Santos', '1995-01-10', 'Rua Brasil, 300', 'maria@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
 ('44444444404', 'Carlos Pereira', '1988-11-05', 'Av. Central, 400', 'carlos@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
 ('55555555505', 'Ana Souza', '1992-06-18', 'Rua São Paulo, 500', 'ana@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
@@ -335,7 +403,7 @@ VALUES
 ('88888888808', 'Lucas Almeida', '1985-12-01', 'Av. Brasil, 800', 'lucas@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
 ('99999999909', 'Fernanda Lima', '1996-04-25', 'Rua das Acácias, 900', 'fernanda@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
 ('12345678910', 'Rafael Gomes', '1982-08-12', 'Rua Paraná, 1000', 'rafael@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
-('23456789011', 'Beatriz Rocha', '2001-03-20', 'Rua Central, 1100', 'beatriz@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
+('16175628900', 'Gabriel Pereira', '2010-05-06', 'do bicudo,42', 'gsoarespereira15@gmail.com', crypt('Mercado123!', gen_salt('bf', 10))),
 ('34567890112', 'Mateus Ribeiro', '1999-05-11', 'Av. Brasil, 1200', 'mateus@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
 ('45678901213', 'Larissa Mendes', '2000-10-07', 'Rua das Flores, 1300', 'larissa@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
 ('56789012314', 'Diego Barbosa', '1994-01-29', 'Rua Paraná, 1400', 'diego@email.com', crypt('Mercado123!', gen_salt('bf', 10))),
@@ -395,7 +463,7 @@ INSERT INTO public.cliente
 (pessoa_cpf_pessoa, renda_cliente, data_cadastro_cliente)
 VALUES
 ('11111111101', 2500.00, '2026-09-01'),
-('22222222202', 3200.00, '2026-09-01'),
+('32876319268', 3200.00, '2026-09-01'),
 ('33333333303', 1800.00, '2026-09-02'),
 ('44444444404', 4500.00, '2026-09-02'),
 ('55555555505', 2100.00, '2026-09-03'),
@@ -409,7 +477,7 @@ VALUES
 INSERT INTO public.funcionario
 (pessoa_cpf_pessoa, salario_funcionario, cargo_id_cargo)
 VALUES
-('23456789011', 4500.00, 1),
+('16175628900', 4500.00, 1),
 ('34567890112', 2100.00, 2),
 ('45678901213', 1900.00, 3),
 ('56789012314', 1800.00, 4),
@@ -466,14 +534,7 @@ WHERE NOT EXISTS (
       AND data_pedido = '2026-11-06 10:00:00'
 );
 
-INSERT INTO public.pedido
-(cliente_cpf, data_pedido, status_pedido)
-SELECT '22222222202', '2026-11-06 11:00:00', 'PAGO'
-WHERE NOT EXISTS (
-    SELECT 1 FROM public.pedido
-    WHERE cliente_cpf = '22222222202'
-      AND data_pedido = '2026-11-06 11:00:00'
-);
+
 
 INSERT INTO public.pedido
 (cliente_cpf, data_pedido, status_pedido)
@@ -648,4 +709,5 @@ SELECT setval(pg_get_serial_sequence('public.produto', 'id_produto'), COALESCE((
 SELECT setval(pg_get_serial_sequence('public.pedido', 'id_pedido'), COALESCE((SELECT MAX(id_pedido) FROM public.pedido), 1), EXISTS (SELECT 1 FROM public.pedido));
 SELECT setval(pg_get_serial_sequence('public.item_pedido', 'id_item_pedido'), COALESCE((SELECT MAX(id_item_pedido) FROM public.item_pedido), 1), EXISTS (SELECT 1 FROM public.item_pedido));
 SELECT setval(pg_get_serial_sequence('public.recuperacao_senha', 'id_recuperacao'), COALESCE((SELECT MAX(id_recuperacao) FROM public.recuperacao_senha), 1), EXISTS (SELECT 1 FROM public.recuperacao_senha));
-
+SELECT setval(pg_get_serial_sequence('public.sessao', 'id_sessao'), COALESCE((SELECT MAX(id_sessao) FROM public.sessao), 1), EXISTS (SELECT 1 FROM public.sessao));
+SELECT setval(pg_get_serial_sequence('public.codigo_verificacao', 'id_codigo'), COALESCE((SELECT MAX(id_codigo) FROM public.codigo_verificacao), 1), EXISTS (SELECT 1 FROM public.codigo_verificacao));

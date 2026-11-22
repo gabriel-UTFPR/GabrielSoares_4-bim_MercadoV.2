@@ -57,11 +57,10 @@ exports.criarCliente = async (req, res) => {
 
 exports.obterCliente = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = String(req.params.id || '').replace(/\D/g, '');
 
-    // console.log("estou no obter cliente id="+ id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: 'ID deve ser um número válido' });
+    if (!/^\d{11}$/.test(id)) {
+      return res.status(400).json({ error: 'Informe um CPF válido.' });
     }
 
     const result = await query(
@@ -87,8 +86,12 @@ exports.atualizarCliente = async (req, res) => {
   // console.log('Atualizando cliente com dados:', req.body);
 
   try {
-    const id = parseInt(req.params.id);
+    const id = String(req.params.id || '').replace(/\D/g, '');
     const { renda_cliente, data_cadastro_cliente } = req.body;
+
+    if (!/^\d{11}$/.test(id)) {
+      return res.status(400).json({ error: 'Informe um CPF válido.' });
+    }
 
      if (!renda_cliente|| renda_cliente<=0) {
       return res.status(400).json({
@@ -130,46 +133,64 @@ exports.atualizarCliente = async (req, res) => {
 }
 
 exports.deletarCliente = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const cpf = String(req.params.id || '').replace(/\D/g, '');
+
+  if (!/^\d{11}$/.test(cpf)) {
+    return res.status(400).json({ sucesso: false, mensagem: 'CPF inválido.' });
+  }
 
   try {
+    // O DELETE inclui NOT EXISTS para evitar remover o vínculo de cliente
+    // enquanto houver qualquer pedido associado.
+    const resultado = await query(`
+      DELETE FROM public.cliente cli
+      WHERE cli.pessoa_cpf_pessoa = $1
+        AND NOT EXISTS (
+          SELECT 1
+          FROM public.pedido p
+          WHERE p.cliente_cpf = cli.pessoa_cpf_pessoa
+        )
+      RETURNING cli.pessoa_cpf_pessoa
+    `, [cpf]);
 
-    // 1. Verifica se o cliente existe
-    const existingPersonResult = await query(
-      'SELECT * FROM public.cliente WHERE pessoa_cpf_pessoa = $1',
-      [id]
-    );
-
-    if (existingPersonResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Cliente não encontrado' });
+    if (resultado.rows.length > 0) {
+      return res.json({ sucesso: true, mensagem: 'Cadastro de cliente removido com sucesso.' });
     }
 
-    // 2. Deleta o cliente
-    await query(
-      'DELETE FROM public.cliente WHERE pessoa_cpf_pessoa = $1',
-      [id]
+    const existente = await query(
+      'SELECT pessoa_cpf_pessoa FROM public.cliente WHERE pessoa_cpf_pessoa = $1',
+      [cpf]
     );
 
-    // 3. Resposta de sucesso (204 No Content - Sem corpo)
-    res.status(204).send();
+    if (existente.rows.length === 0) {
+      return res.status(404).json({ sucesso: false, mensagem: 'Cliente não encontrado.' });
+    }
 
-  } catch (error) {
+    const pedidos = await query(
+      'SELECT COUNT(*)::INTEGER AS quantidade FROM public.pedido WHERE cliente_cpf = $1',
+      [cpf]
+    );
 
-    // console.error('Erro ao deletar cliente:', error);
-
-    // Verifica se é erro de violação de foreign key (código 23503)
-    if (error.code === '23503') {
-      // Retorna 409 Conflict, que é o mais apropriado para violações de integridade
+    if (Number(pedidos.rows[0].quantidade) > 0) {
       return res.status(409).json({
-        // Mensagem de erro mais descritiva baseada no detalhe do DB
-        error: 'Erro de integridade referencial - o cliente não pode ser excluído, pois está associado a outras entidades (ex: pedidos).'
-        // Opcional: detail: error.detail // Você pode enviar o detalhe técnico se precisar no frontend
+        sucesso: false,
+        mensagem: `Este cliente possui ${pedidos.rows[0].quantidade} pedido(s) e não pode ser removido do cadastro de clientes.`
       });
     }
 
-    // Erros internos inesperados
-    res.status(500).json({ error: 'Erro interno do servidor ao tentar excluir o cliente.' });
+    return res.status(409).json({ sucesso: false, mensagem: 'Não foi possível remover o cadastro de cliente.' });
+  } catch (error) {
+    console.error('Erro ao deletar cliente:', error);
+
+    // A FK pedido_cliente_fk continua sendo a última proteção contra uma
+    // exclusão concorrente com a criação de um pedido.
+    if (error.code === '23503') {
+      return res.status(409).json({
+        sucesso: false,
+        mensagem: 'Este cliente possui pedidos associados e não pode ser removido.'
+      });
+    }
+
+    return res.status(500).json({ sucesso: false, mensagem: 'Erro interno ao tentar remover o cliente.' });
   }
-}
-
-
+};

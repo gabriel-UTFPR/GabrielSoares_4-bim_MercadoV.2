@@ -1,7 +1,10 @@
+'use strict';
 
 const crypto = require('crypto');
-const { query } = require('../database');
+const { query, pool } = require('../database');
 const { enviarEmail } = require('./emailService');
+
+const FINALIDADES_PERMITIDAS = ['ATIVACAO', 'LOGIN', 'RECUPERACAO'];
 
 function gerarCodigo() {
     return crypto.randomInt(100000, 1000000).toString();
@@ -20,15 +23,25 @@ function gerarHash(codigo) {
         .digest('hex');
 }
 
+function obterAssunto(finalidade) {
+    const assuntos = {
+        ATIVACAO: 'Confirmação de cadastro - Mercado V.2',
+        LOGIN: 'Código de acesso - Mercado V.2',
+        RECUPERACAO: 'Recuperação de senha - Mercado V.2'
+    };
+
+    return assuntos[finalidade];
+}
+
 async function enviarCodigoVerificacao(cpf, email, finalidade) {
-    if (!['LOGIN', 'RECUPERACAO'].includes(finalidade)) {
+    if (!FINALIDADES_PERMITIDAS.includes(finalidade)) {
         throw new Error('Finalidade de verificação inválida.');
     }
 
     const codigo = gerarCodigo();
     const codigoHash = gerarHash(codigo);
 
-    // Invalida códigos anteriores ainda não utilizados.
+    // Invalida códigos anteriores ainda não utilizados para a mesma finalidade.
     await query(`
         UPDATE public.codigo_verificacao
         SET data_invalidacao = CURRENT_TIMESTAMP
@@ -38,7 +51,7 @@ async function enviarCodigoVerificacao(cpf, email, finalidade) {
           AND data_invalidacao IS NULL
     `, [cpf, finalidade]);
 
-    // Armazena somente o hash do código.
+    // Somente o hash do código é armazenado no banco.
     const resultado = await query(`
         INSERT INTO public.codigo_verificacao (
             cpf_pessoa,
@@ -60,16 +73,14 @@ async function enviarCodigoVerificacao(cpf, email, finalidade) {
     try {
         await enviarEmail({
             para: email,
-            assunto: finalidade === 'LOGIN'
-                ? 'Código de acesso - Mercado V.2'
-                : 'Recuperação de senha - Mercado V.2',
-
+            assunto: obterAssunto(finalidade),
             texto: `Seu código de verificação é: ${codigo}. Ele expira em 5 minutos.`,
-
             html: `
                 <div style="font-family: Arial, sans-serif;">
                     <h2>Mercado V.2</h2>
-                    <p>Seu código de verificação é:</p>
+                    <p>${finalidade === 'ATIVACAO'
+                        ? 'Para concluir seu cadastro, confirme seu e-mail com o código abaixo:'
+                        : 'Seu código de verificação é:'}</p>
                     <h1 style="letter-spacing: 6px;">${codigo}</h1>
                     <p>Este código expira em 5 minutos.</p>
                     <p>Se você não solicitou este código, ignore esta mensagem.</p>
@@ -77,7 +88,6 @@ async function enviarCodigoVerificacao(cpf, email, finalidade) {
             `
         });
     } catch (erro) {
-        // Invalida o código se o e-mail não puder ser enviado.
         await query(`
             UPDATE public.codigo_verificacao
             SET data_invalidacao = CURRENT_TIMESTAMP
@@ -90,15 +100,17 @@ async function enviarCodigoVerificacao(cpf, email, finalidade) {
     return true;
 }
 
-
-async function validarCodigoVerificacao(cpf, codigo, finalidade) {
-    const { pool } = require('../database');
-
+/*
+ * A função aceita uma ação opcional para executar na mesma transação da
+ * validação. No cadastro, isso permite inserir em public.cliente e consumir
+ * o código atomicamente: se o INSERT falhar, o código continua disponível.
+ */
+async function validarCodigoVerificacao(cpf, codigo, finalidade, aoConfirmar) {
     if (!/^\d{6}$/.test(codigo)) {
         return false;
     }
 
-    if (!['LOGIN', 'RECUPERACAO'].includes(finalidade)) {
+    if (!FINALIDADES_PERMITIDAS.includes(finalidade)) {
         return false;
     }
 
@@ -107,8 +119,6 @@ async function validarCodigoVerificacao(cpf, codigo, finalidade) {
     try {
         await client.query('BEGIN');
 
-        // Busca o código mais recente que ainda pode ser utilizado.
-        // FOR UPDATE impede validações simultâneas do mesmo registro.
         const resultado = await client.query(`
             SELECT *
             FROM public.codigo_verificacao
@@ -121,14 +131,13 @@ async function validarCodigoVerificacao(cpf, codigo, finalidade) {
             FOR UPDATE
         `, [cpf, finalidade]);
 
-        if (resultado.rows.length === 0) {
+        if (!resultado.rows.length) {
             await client.query('COMMIT');
             return false;
         }
 
         const registro = resultado.rows[0];
 
-        // Verifica se o código expirou.
         if (new Date(registro.data_expiracao) <= new Date()) {
             await client.query(`
                 UPDATE public.codigo_verificacao
@@ -140,7 +149,6 @@ async function validarCodigoVerificacao(cpf, codigo, finalidade) {
             return false;
         }
 
-        // Verifica o limite de tentativas.
         if (registro.tentativas >= registro.limite_tentativas) {
             await client.query(`
                 UPDATE public.codigo_verificacao
@@ -152,24 +160,14 @@ async function validarCodigoVerificacao(cpf, codigo, finalidade) {
             return false;
         }
 
-        // Calcula novamente o hash do código informado.
         const hashInformado = gerarHash(codigo);
-
-        const hashBanco = Buffer.from(
-            registro.codigo_hash,
-            'hex'
-        );
-
-        const hashDigitado = Buffer.from(
-            hashInformado,
-            'hex'
-        );
+        const hashBanco = Buffer.from(registro.codigo_hash, 'hex');
+        const hashDigitado = Buffer.from(hashInformado, 'hex');
 
         const codigoCorreto =
             hashBanco.length === hashDigitado.length &&
             crypto.timingSafeEqual(hashBanco, hashDigitado);
 
-        // Código incorreto: aumenta o número de tentativas.
         if (!codigoCorreto) {
             await client.query(`
                 UPDATE public.codigo_verificacao
@@ -187,7 +185,11 @@ async function validarCodigoVerificacao(cpf, codigo, finalidade) {
             return false;
         }
 
-        // Código correto: marca como utilizado.
+        // Executa a ação protegida antes de consumir o código.
+        if (typeof aoConfirmar === 'function') {
+            await aoConfirmar(client, registro);
+        }
+
         await client.query(`
             UPDATE public.codigo_verificacao
             SET data_utilizacao = CURRENT_TIMESTAMP
@@ -195,7 +197,6 @@ async function validarCodigoVerificacao(cpf, codigo, finalidade) {
         `, [registro.id_codigo]);
 
         await client.query('COMMIT');
-
         return true;
 
     } catch (erro) {

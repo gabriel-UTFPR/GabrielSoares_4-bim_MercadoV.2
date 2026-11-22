@@ -11,6 +11,7 @@ router.get('/listar', produtoController.listarProdutos);
 router.get('/:id', produtoController.obterProduto);
 router.post('/', produtoController.criarProduto);
 router.put('/:id', produtoController.atualizarProduto);
+router.post('/:id/repor-estoque', produtoController.reporEstoque);
 router.delete('/:id', produtoController.deletarProduto);
 
 // Rota para upload da imagem

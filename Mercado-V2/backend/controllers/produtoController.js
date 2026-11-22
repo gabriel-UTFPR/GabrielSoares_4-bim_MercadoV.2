@@ -92,17 +92,18 @@ exports.criarProduto = async (req, res) => {
 exports.atualizarProduto = async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
-        const { descricao, id_categoria,id_fornecedor,id_unidade_medida, estoque, preco } = req.body;
+        const { descricao, id_categoria, id_fornecedor, id_unidade_medida, preco } = req.body;
 
+        // O estoque não é sobrescrito na edição normal. A reposição possui rota própria
+        // e soma a quantidade de forma atômica para não perder entradas simultâneas.
         const sql = `
-            UPDATE public.produto 
-            SET descricao = $1, 
-                id_categoria = $2, 
-                id_fornecedor=$3,
-                id_unidade_medida=$4,
-                estoque = $5, 
-                preco = $6 
-            WHERE id_produto = $7
+            UPDATE public.produto
+            SET descricao = $1,
+                id_categoria = $2,
+                id_fornecedor = $3,
+                id_unidade_medida = $4,
+                preco = $5
+            WHERE id_produto = $6
             RETURNING *
         `;
 
@@ -111,7 +112,6 @@ exports.atualizarProduto = async (req, res) => {
             id_categoria || null,
             id_fornecedor || null,
             id_unidade_medida || null,
-            estoque || 0,
             preco || 0.0,
             id
         ];
@@ -147,6 +147,63 @@ exports.atualizarProduto = async (req, res) => {
     });
 }
         res.status(500).json({ sucesso: false, mensagem: 'Erro ao atualizar produto.' });
+    }
+};
+
+// Repor estoque sem substituir a quantidade que já existe.
+exports.reporEstoque = async (req, res) => {
+    try {
+        const id = Number.parseInt(req.params.id, 10);
+        const quantidade = Number(req.body.quantidade);
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({ sucesso: false, mensagem: 'ID de produto inválido.' });
+        }
+
+        if (!Number.isFinite(quantidade) || quantidade <= 0 || quantidade > 9999999.999 || !Number.isInteger(quantidade * 1000)) {
+            return res.status(400).json({ sucesso: false, mensagem: 'Informe uma quantidade positiva com até três casas decimais.' });
+        }
+
+        const atual = await query(
+            'SELECT id_unidade_medida FROM public.produto WHERE id_produto = $1',
+            [id]
+        );
+
+        if (atual.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, mensagem: 'Produto não encontrado.' });
+        }
+
+        if (atual.rows[0].id_unidade_medida !== 'KG' && !Number.isInteger(quantidade)) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Somente produtos vendidos em KG permitem reposição com quantidade decimal.'
+            });
+        }
+
+        const resultado = await query(`
+            UPDATE public.produto
+            SET estoque = estoque + $1::NUMERIC
+            WHERE id_produto = $2
+            RETURNING *
+        `, [quantidade, id]);
+
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ sucesso: false, mensagem: 'Produto não encontrado.' });
+        }
+
+        return res.json({
+            sucesso: true,
+            mensagem: `Estoque reposto. Nova quantidade: ${resultado.rows[0].estoque}.`,
+            produto: resultado.rows[0]
+        });
+    } catch (error) {
+        console.error('Erro ao repor estoque:', error);
+
+        if (error.code === '22003') {
+            return res.status(400).json({ sucesso: false, mensagem: 'A quantidade ultrapassa o limite de estoque permitido.' });
+        }
+
+        return res.status(500).json({ sucesso: false, mensagem: 'Erro interno ao repor o estoque.' });
     }
 };
 
