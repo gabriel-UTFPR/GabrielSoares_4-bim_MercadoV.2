@@ -14,6 +14,10 @@ body { font-family:"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); col
 .icone-sucesso { margin:0 auto 14px; width:64px; height:64px; display:grid; place-items:center; border-radius:50%; background:var(--green-bg); color:var(--green); font-size:36px; font-weight:700; }
 h1 { color:var(--blue-dark); font-size:28px; } .descricao { color:var(--muted); margin-top:5px; }
 .numero-pedido { margin:22px 0 8px; padding:14px; background:var(--blue-light); border-radius:10px; color:var(--blue-dark); font-size:18px; }
+.aviso-email { margin:14px 0 18px; padding:12px 14px; border-radius:9px; font-size:14px; }
+.aviso-email--sucesso { color:#067647; background:#ecfdf3; border:1px solid #abefc6; }
+.aviso-email--erro { color:#b42318; background:#fef3f2; border:1px solid #fecdca; }
+
 .status { color:var(--green); margin-bottom:20px; }
 .resumo { text-align:left; border:1px solid var(--border); border-radius:10px; padding:18px; }
 .resumo h2 { color:var(--blue-dark); font-size:18px; margin-bottom:8px; }

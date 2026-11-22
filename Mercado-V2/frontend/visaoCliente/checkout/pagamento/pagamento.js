@@ -305,6 +305,8 @@ async function finalizarPedido(evento) {
             valor_frete: freteConfirmado,
             total: Number(dados.pedido.total),
             formaPagamento: formaPagamento.value,
+            emailEnviado: Boolean(dados.emailEnviado),
+            emailDestino: dados.emailDestino || null,
             dataFinalizacao: new Date().toISOString()
         };
 

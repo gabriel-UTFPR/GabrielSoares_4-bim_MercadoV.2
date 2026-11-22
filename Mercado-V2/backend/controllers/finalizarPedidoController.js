@@ -14,6 +14,7 @@
 ===================================================== */
 
 const { pool } = require('../database');
+const { enviarEmail } = require('../services/emailService');
 const {
     ErroFrete,
     calcularFrete,
@@ -31,6 +32,163 @@ const FORMAS_PAGAMENTO = {
     CARTAO_DEBITO: 'DEBITO',
     DINHEIRO: 'DINHEIRO'
 };
+
+
+function escaparHtml(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, caractere => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[caractere]);
+}
+
+function formatarMoeda(valor) {
+    return Number(valor).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+}
+
+function formatarQuantidade(valor) {
+    return Number(valor).toLocaleString('pt-BR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 3
+    });
+}
+
+function obterNomeFormaPagamento(formaPagamento) {
+    const nomes = {
+        PIX: 'PIX',
+        CREDITO: 'Cartão de crédito',
+        DEBITO: 'Cartão de débito',
+        DINHEIRO: 'Dinheiro'
+    };
+
+    return nomes[formaPagamento] || formaPagamento;
+}
+
+function montarEmailConfirmacao({ cliente, pedido, itens, endereco }) {
+    const nome = escaparHtml(cliente.nome_pessoa);
+    const numeroPedido = escaparHtml(pedido.id_pedido);
+    const dataPedido = new Date(pedido.data_pedido).toLocaleString('pt-BR');
+    const formaPagamento = obterNomeFormaPagamento(pedido.forma_pagamento);
+
+    const linhasItensTexto = itens.map(item => {
+        const quantidade = formatarQuantidade(item.quantidade);
+        const preco = formatarMoeda(item.preco_unitario);
+        const totalItem = formatarMoeda(
+            Number(item.quantidade) * Number(item.preco_unitario)
+        );
+
+        return `- ${item.descricao_produto} | ${quantidade} x ${preco} = ${totalItem}`;
+    }).join('\n');
+
+    const linhasItensHtml = itens.map(item => {
+        const quantidade = escaparHtml(formatarQuantidade(item.quantidade));
+        const descricao = escaparHtml(item.descricao_produto);
+        const preco = escaparHtml(formatarMoeda(item.preco_unitario));
+        const totalItem = escaparHtml(formatarMoeda(
+            Number(item.quantidade) * Number(item.preco_unitario)
+        ));
+
+        return `
+            <tr>
+                <td style="padding:10px;border-bottom:1px solid #e5e7eb;">${descricao}</td>
+                <td style="padding:10px;border-bottom:1px solid #e5e7eb;text-align:center;">${quantidade}</td>
+                <td style="padding:10px;border-bottom:1px solid #e5e7eb;text-align:right;">${preco}</td>
+                <td style="padding:10px;border-bottom:1px solid #e5e7eb;text-align:right;">${totalItem}</td>
+            </tr>
+        `;
+    }).join('');
+
+    const enderecoTexto = [
+        `${endereco.rua}, ${endereco.numero}`,
+        endereco.complemento,
+        endereco.bairro,
+        `${endereco.cidade} - ${endereco.estado}`,
+        `CEP: ${endereco.cep}`,
+        endereco.referencia ? `Referência: ${endereco.referencia}` : null
+    ].filter(Boolean).join(' | ');
+
+    const enderecoHtml = [
+        `${escaparHtml(endereco.rua)}, ${escaparHtml(endereco.numero)}`,
+        endereco.complemento ? escaparHtml(endereco.complemento) : null,
+        escaparHtml(endereco.bairro),
+        `${escaparHtml(endereco.cidade)} - ${escaparHtml(endereco.estado)}`,
+        `CEP: ${escaparHtml(endereco.cep)}`,
+        endereco.referencia ? `Referência: ${escaparHtml(endereco.referencia)}` : null
+    ].filter(Boolean).join('<br>');
+
+    const texto = [
+        `Olá, ${cliente.nome_pessoa}!`,
+        '',
+        `Seu pedido #${pedido.id_pedido} foi confirmado no Mercado V.2.`,
+        `Data: ${dataPedido}`,
+        `Status: ${pedido.status_pedido}`,
+        `Forma de pagamento: ${formaPagamento}`,
+        '',
+        'Produtos:',
+        linhasItensTexto,
+        '',
+        `Subtotal: ${formatarMoeda(pedido.subtotal)}`,
+        `Frete: ${formatarMoeda(pedido.valor_frete)}`,
+        `Total: ${formatarMoeda(pedido.total)}`,
+        '',
+        `Endereço de entrega: ${enderecoTexto}`,
+        '',
+        'Obrigado por comprar no Mercado V.2!'
+    ].join('\n');
+
+    const html = `
+        <div style="margin:0;padding:24px;background:#f4f7fb;font-family:Arial,sans-serif;color:#1f2937;">
+            <div style="max-width:680px;margin:0 auto;background:#ffffff;border:1px solid #dbe3ef;border-radius:12px;overflow:hidden;">
+                <div style="padding:22px 26px;background:#0b3d91;color:#ffffff;">
+                    <h1 style="margin:0;font-size:24px;">Mercado <span style="color:#93c5fd;">V.2</span></h1>
+                </div>
+                <div style="padding:26px;">
+                    <h2 style="margin:0 0 12px;color:#067647;">Compra confirmada!</h2>
+                    <p>Olá, <strong>${nome}</strong>!</p>
+                    <p>Seu pedido <strong>#${numeroPedido}</strong> foi registrado com sucesso.</p>
+                    <p style="color:#6b7280;font-size:13px;">${escaparHtml(dataPedido)} · Status: ${escaparHtml(pedido.status_pedido)}</p>
+
+                    <h3 style="margin:24px 0 10px;color:#0b3d91;">Resumo dos produtos</h3>
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                        <thead>
+                            <tr style="background:#e8f0fd;color:#0b3d91;">
+                                <th style="padding:10px;text-align:left;">Produto</th>
+                                <th style="padding:10px;text-align:center;">Qtd.</th>
+                                <th style="padding:10px;text-align:right;">Preço</th>
+                                <th style="padding:10px;text-align:right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>${linhasItensHtml}</tbody>
+                    </table>
+
+                    <div style="margin:20px 0 0 auto;max-width:300px;">
+                        <p style="display:flex;justify-content:space-between;">Subtotal: <strong>${escaparHtml(formatarMoeda(pedido.subtotal))}</strong></p>
+                        <p style="display:flex;justify-content:space-between;">Frete: <strong>${escaparHtml(formatarMoeda(pedido.valor_frete))}</strong></p>
+                        <p style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid #dbe3ef;font-size:18px;color:#0b3d91;">Total: <strong>${escaparHtml(formatarMoeda(pedido.total))}</strong></p>
+                    </div>
+
+                    <p><strong>Forma de pagamento:</strong> ${escaparHtml(formaPagamento)}</p>
+                    <h3 style="margin:24px 0 8px;color:#0b3d91;">Endereço de entrega</h3>
+                    <p style="line-height:1.6;">${enderecoHtml}</p>
+                    <p style="margin-top:24px;">Obrigado por comprar no Mercado V.2!</p>
+                    <p style="color:#6b7280;font-size:12px;">Este e-mail confirma o registro do pedido. O pagamento do projeto é simulado.</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    return {
+        para: cliente.email_pessoa,
+        assunto: `Pedido #${pedido.id_pedido} confirmado - Mercado V.2`,
+        texto,
+        html
+    };
+}
 
 
 /* =====================================================
@@ -404,7 +562,9 @@ exports.finalizarPedido = async (req, res) => {
         const resultadoFinal = await client.query(`
             SELECT
                 id_pedido,
+                data_pedido,
                 status_pedido,
+                forma_pagamento,
                 valor_total,
                 valor_frete,
                 (valor_total + valor_frete) AS total_compra
@@ -412,20 +572,89 @@ exports.finalizarPedido = async (req, res) => {
             WHERE id_pedido = $1
         `, [idPedido]);
 
-        const pedido = resultadoFinal.rows[0];
+        const pedidoBanco = resultadoFinal.rows[0];
 
-        // Confirmar todas as operações.
+        // Recuperar o e-mail cadastrado e confirmar que o CPF possui vínculo de cliente.
+        const resultadoCliente = await client.query(`
+            SELECT
+                p.nome_pessoa,
+                p.email_pessoa
+            FROM public.pessoa p
+            INNER JOIN public.cliente c
+                ON c.pessoa_cpf_pessoa = p.cpf_pessoa
+            WHERE p.cpf_pessoa = $1
+            LIMIT 1
+        `, [cpf]);
+
+        if (resultadoCliente.rows.length === 0) {
+            throw new Error('Não foi possível localizar os dados do cliente para enviar a confirmação.');
+        }
+
+        const clienteEmail = resultadoCliente.rows[0];
+
+        // Recuperar os produtos registrados no pedido para compor o e-mail.
+        const resultadoItensEmail = await client.query(`
+            SELECT
+                descricao_produto,
+                quantidade,
+                preco_unitario
+            FROM public.item_pedido
+            WHERE pedido_id = $1
+            ORDER BY id_item_pedido
+        `, [idPedido]);
+
+        const pedidoEmail = {
+            id_pedido: pedidoBanco.id_pedido,
+            data_pedido: pedidoBanco.data_pedido,
+            status_pedido: pedidoBanco.status_pedido,
+            forma_pagamento: pedidoBanco.forma_pagamento,
+            subtotal: Number(pedidoBanco.valor_total),
+            valor_frete: Number(pedidoBanco.valor_frete),
+            total: Number(pedidoBanco.total_compra)
+        };
+
+        // Preparar o e-mail antes de encerrar a conexão com o banco.
+        const mensagemEmail = montarEmailConfirmacao({
+            cliente: clienteEmail,
+            pedido: pedidoEmail,
+            itens: resultadoItensEmail.rows,
+            endereco
+        });
+
+        // Confirmar a compra no banco ANTES de tentar enviar o e-mail.
         await client.query('COMMIT');
+
+        // Liberar a conexão: a comunicação SMTP ocorre fora da transação.
+        client.release();
+        client = null;
+
+        // Falha no e-mail não desfaz uma compra que já foi confirmada.
+        let emailEnviado = false;
+
+        try {
+            await enviarEmail(mensagemEmail);
+            emailEnviado = true;
+            console.log(`[pedido] E-mail de confirmação enviado para ${clienteEmail.email_pessoa} (pedido #${idPedido}).`);
+        } catch (erroEmail) {
+            console.error(
+                `[pedido] Pedido #${idPedido} foi confirmado, mas o e-mail não pôde ser enviado para ${clienteEmail.email_pessoa}:`,
+                erroEmail
+            );
+        }
 
         return res.status(201).json({
             sucesso: true,
-            mensagem: 'Pedido finalizado com sucesso!',
+            mensagem: emailEnviado
+                ? 'Pedido finalizado com sucesso! Enviamos a confirmação para seu e-mail.'
+                : 'Pedido finalizado com sucesso, mas não foi possível enviar o e-mail de confirmação.',
+            emailEnviado,
+            emailDestino: clienteEmail.email_pessoa,
             pedido: {
-                id_pedido: pedido.id_pedido,
-                status_pedido: pedido.status_pedido,
-                subtotal: Number(pedido.valor_total),
-                valor_frete: Number(pedido.valor_frete),
-                total: Number(pedido.total_compra)
+                id_pedido: pedidoEmail.id_pedido,
+                status_pedido: pedidoEmail.status_pedido,
+                subtotal: pedidoEmail.subtotal,
+                valor_frete: pedidoEmail.valor_frete,
+                total: pedidoEmail.total
             }
         });
 
