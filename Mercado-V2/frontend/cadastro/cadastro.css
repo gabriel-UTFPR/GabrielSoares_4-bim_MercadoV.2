@@ -267,3 +267,40 @@ body {
         font-size: 25px;
     }
 }
+
+
+/* Controle para mostrar/ocultar os campos de senha. */
+.campo-senha__controle {
+    position: relative;
+    width: 100%;
+}
+
+.campo-senha__controle input {
+    padding-right: 86px;
+}
+
+.botao-mostrar-senha {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    min-height: 30px;
+    padding: 4px 7px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: #1769aa;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.botao-mostrar-senha:hover {
+    background: #edf5fc;
+    color: #0b477c;
+}
+
+.botao-mostrar-senha:focus-visible {
+    outline: 2px solid #1769aa;
+    outline-offset: 2px;
+}

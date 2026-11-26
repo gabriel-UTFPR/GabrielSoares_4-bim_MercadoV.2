@@ -32,6 +32,24 @@ const separadorCadastro = document.getElementById('separadorCadastro');
 const textoLogin = document.getElementById('textoLogin');
 const linkVoltarLogin = document.getElementById('linkVoltarLogin');
 
+// Mostrar/ocultar senha e confirmação da senha.
+document.querySelectorAll('[data-toggle-password]').forEach((botao) => {
+    const campo = document.getElementById(botao.dataset.togglePassword);
+
+    if (!campo) return;
+
+    botao.addEventListener('click', () => {
+        const mostrar = campo.type === 'password';
+        campo.type = mostrar ? 'text' : 'password';
+        botao.textContent = mostrar ? 'Ocultar' : 'Mostrar';
+        botao.setAttribute('aria-pressed', String(mostrar));
+        botao.setAttribute(
+            'aria-label',
+            mostrar ? 'Ocultar senha' : 'Mostrar senha'
+        );
+    });
+});
+
 let dadosPendentes = null;
 
 function mostrarMensagem(elemento, mensagem, sucesso = false) {

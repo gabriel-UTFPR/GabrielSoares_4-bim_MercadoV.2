@@ -31,6 +31,34 @@ const btnSalvar = document.getElementById('btnSalvar');
 const pessoasTableBody = document.getElementById('pessoasTableBody');
 const messageContainer = document.getElementById('messageContainer');
 
+// Mostrar/ocultar a senha informada no cadastro de pessoas/clientes.
+document.querySelectorAll('[data-toggle-password]').forEach((botao) => {
+    const campo = document.getElementById(botao.dataset.togglePassword);
+
+    if (!campo) return;
+
+    botao.addEventListener('click', () => {
+        const mostrar = campo.type === 'password';
+        campo.type = mostrar ? 'text' : 'password';
+        botao.textContent = mostrar ? 'Ocultar' : 'Mostrar';
+        botao.setAttribute('aria-pressed', String(mostrar));
+        botao.setAttribute(
+            'aria-label',
+            mostrar ? 'Ocultar senha' : 'Mostrar senha'
+        );
+    });
+});
+
+function ocultarSenhaFormulario() {
+    document.querySelectorAll('[data-toggle-password]').forEach((botao) => {
+        const campo = document.getElementById(botao.dataset.togglePassword);
+        if (campo) campo.type = 'password';
+        botao.textContent = 'Mostrar';
+        botao.setAttribute('aria-pressed', 'false');
+        botao.setAttribute('aria-label', 'Mostrar senha');
+    });
+}
+
 // Carregar lista de pessoas e popular menu de cargos ao inicializar
 document.addEventListener('DOMContentLoaded', () => {
     carregarPessoas();
@@ -68,6 +96,8 @@ function bloquearCampos(bloquearPrimeiro) {
 
 function limparFormulario() {
     form.reset();
+    ocultarSenhaFormulario();
+    document.getElementById('senha_pessoa').value = '';
     document.getElementById('checkboxFuncionario').checked = false;
     document.getElementById('salario_funcionario').value = '';
     document.getElementById('cargo_id_cargo').value = '';
@@ -175,6 +205,8 @@ async function buscarPessoa() {
 }
 
 async function preencherFormulario(pessoa) {
+    ocultarSenhaFormulario();
+    document.getElementById('senha_pessoa').value = '';
     currentPersonId = String(pessoa.cpf_pessoa).replace(/\D/g, '');
 searchId.value = currentPersonId.replace(
     /(\d{3})(\d{3})(\d{3})(\d{2})/,

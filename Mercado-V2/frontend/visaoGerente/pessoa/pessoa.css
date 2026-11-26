@@ -404,3 +404,40 @@ header .logo-mercado:hover {
 }
 
 header { position: relative; }
+
+
+/* Controle para mostrar/ocultar a senha no CRUD de Pessoas/Clientes. */
+.controle-senha {
+    position: relative;
+    width: 100%;
+}
+
+.controle-senha input {
+    width: 100%;
+    padding-right: 88px;
+}
+
+.botao-mostrar-senha {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    padding: 0.35rem 0.6rem;
+    border: 1px solid #cbd8e6;
+    border-radius: 4px;
+    background: #ffffff;
+    color: var(--cor-primaria);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.botao-mostrar-senha:hover {
+    background: #eaf3fc;
+    color: #124f91;
+}
+
+.botao-mostrar-senha:focus-visible {
+    outline: 2px solid var(--cor-primaria);
+    outline-offset: 2px;
+}

@@ -59,6 +59,7 @@
 
                     <div class="form-group">
                         <label for="senha_pessoa">Senha:</label>
+                        <div class="controle-senha">
                             <input
                                 type="password"
                                 id="senha_pessoa"
@@ -66,6 +67,15 @@
                                 placeholder="Digite a senha"
                                 autocomplete="new-password"
                             >
+                            <button
+                                type="button"
+                                class="botao-mostrar-senha"
+                                data-toggle-password="senha_pessoa"
+                                aria-controls="senha_pessoa"
+                                aria-label="Mostrar senha"
+                                aria-pressed="false"
+                            >Mostrar</button>
+                        </div>
                     </div>
 
                 </fieldset>

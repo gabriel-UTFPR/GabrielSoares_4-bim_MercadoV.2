@@ -259,3 +259,51 @@ h1 {
         padding: 16px;
     }
 }
+
+
+/* Cartões de produtos: imagens com dimensões uniformes */
+.produto-revisao {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    background: var(--branco);
+}
+
+.produto-revisao__imagem {
+    width: 120px;
+    height: 120px;
+    flex: 0 0 120px;
+    object-fit: contain;
+    background: var(--branco);
+}
+
+.produto-revisao__informacoes {
+    min-width: 0;
+}
+
+.produto-revisao__nome {
+    color: var(--texto);
+    margin-bottom: 8px;
+}
+
+.produto-revisao__quantidade,
+.produto-revisao__preco,
+.produto-revisao__subtotal {
+    margin-top: 4px;
+}
+
+@media (max-width: 480px) {
+    .produto-revisao {
+        gap: 12px;
+        padding: 10px;
+    }
+
+    .produto-revisao__imagem {
+        width: 90px;
+        height: 90px;
+        flex-basis: 90px;
+    }
+}

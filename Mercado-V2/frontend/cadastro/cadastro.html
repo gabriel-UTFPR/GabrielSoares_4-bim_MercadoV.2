@@ -102,28 +102,48 @@
 
                 <div class="campo">
                     <label for="senha">Senha</label>
-                    <input
-                        type="password"
-                        id="senha"
-                        name="senha"
-                        placeholder="Crie uma senha"
-                        minlength="8"
-                        autocomplete="new-password"
-                        required
-                    >
+                    <div class="campo-senha__controle">
+                        <input
+                            type="password"
+                            id="senha"
+                            name="senha"
+                            placeholder="Crie uma senha"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                        <button
+                            type="button"
+                            class="botao-mostrar-senha"
+                            data-toggle-password="senha"
+                            aria-controls="senha"
+                            aria-label="Mostrar senha"
+                            aria-pressed="false"
+                        >Mostrar</button>
+                    </div>
                 </div>
 
                 <div class="campo">
                     <label for="confirmarSenha">Confirmar senha</label>
-                    <input
-                        type="password"
-                        id="confirmarSenha"
-                        name="confirmarSenha"
-                        placeholder="Digite a senha novamente"
-                        minlength="8"
-                        autocomplete="new-password"
-                        required
-                    >
+                    <div class="campo-senha__controle">
+                        <input
+                            type="password"
+                            id="confirmarSenha"
+                            name="confirmarSenha"
+                            placeholder="Digite a senha novamente"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                        <button
+                            type="button"
+                            class="botao-mostrar-senha"
+                            data-toggle-password="confirmarSenha"
+                            aria-controls="confirmarSenha"
+                            aria-label="Mostrar confirmação da senha"
+                            aria-pressed="false"
+                        >Mostrar</button>
+                    </div>
                 </div>
 
                 <button type="submit" class="botao-cadastrar" id="botaoCadastrar">
